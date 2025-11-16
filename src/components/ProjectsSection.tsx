@@ -49,7 +49,7 @@ const ProjectsSection = () => {
       try {
         // Fetch section content
         const sectionResponse = await fetch(
-          'http://localhost:5000/api/sections/projects-section'
+          `${import.meta.env.VITE_API_URL}/api/sections/projects-section`
         );
         if (!sectionResponse.ok) {
           throw new Error(`HTTP error! status: ${sectionResponse.status}`);
@@ -59,7 +59,7 @@ const ProjectsSection = () => {
 
         // Fetch projects
         const projectsResponse = await fetch(
-          `http://localhost:5000/api/projects?limit=${visibleProjectsCount}`
+          `${import.meta.env.VITE_API_URL}/api/projects?limit=${visibleProjectsCount}`
         );
         if (!projectsResponse.ok) {
           throw new Error(`HTTP error! status: ${projectsResponse.status}`);

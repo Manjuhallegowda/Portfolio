@@ -42,7 +42,7 @@ const BlogsSection = () => {
       try {
         // Fetch section content
         const sectionResponse = await fetch(
-          'http://localhost:5000/api/sections/blogs-section'
+          `${import.meta.env.VITE_API_URL}/api/sections/blogs-section`
         );
         if (!sectionResponse.ok) {
           throw new Error(`HTTP error! status: ${sectionResponse.status}`);
@@ -52,7 +52,7 @@ const BlogsSection = () => {
 
         // Fetch blogs
         const blogsResponse = await fetch(
-          `http://localhost:5000/api/blogs?page=${page}&limit=${limit}`
+          `${import.meta.env.VITE_API_URL}/api/blogs?page=${page}&limit=${limit}`
         );
         if (!blogsResponse.ok) {
           throw new Error(`HTTP error! status: ${blogsResponse.status}`);

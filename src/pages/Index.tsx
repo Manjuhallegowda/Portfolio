@@ -24,17 +24,21 @@ interface SectionContent {
   };
 }
 
+const API_BASE_URL = import.meta.env.VITE_API_URL as string;
+
 const Index = () => {
   const [isHireMePopupOpen, setIsHireMePopupOpen] = useState(false);
   const [visionSectionData, setVisionSectionData] =
     useState<SectionContent | null>(null);
   const location = useLocation();
 
+  // Scroll to section when navigated with state.scrollTo
   useEffect(() => {
-    if (location.state && location.state.scrollTo) {
-      const element = document.getElementById(location.state.scrollTo);
+    const state = location.state as { scrollTo?: string } | null;
+    if (state?.scrollTo) {
+      const element = document.getElementById(state.scrollTo);
       if (element) {
-        const yOffset = -80; // Adjust this value to match your navigation bar's height
+        const yOffset = -80; // navbar height offset
         const y =
           element.getBoundingClientRect().top + window.pageYOffset + yOffset;
         window.scrollTo({ top: y, behavior: 'smooth' });
@@ -42,16 +46,20 @@ const Index = () => {
     }
   }, [location]);
 
+  // Fetch vision section content
   useEffect(() => {
     const fetchVisionSection = async () => {
       try {
-        const response = await fetch(
-          'http://localhost:5000/api/sections/vision-section'
+        const sectionResponse = await fetch(
+          `${API_BASE_URL}/api/sections/vision-section`
         );
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+
+        if (!sectionResponse.ok) {
+          throw new Error(`HTTP error! status: ${sectionResponse.status}`);
         }
-        const data = await response.json();
+
+        const data = await sectionResponse.json();
+        // Assuming backend already returns shape matching SectionContent
         setVisionSectionData(data);
       } catch (err: any) {
         console.error('Failed to fetch vision section:', err);
@@ -64,29 +72,38 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navigation onHireMeClick={() => setIsHireMePopupOpen(true)} />
+
       <div>
         <HeroSection />
       </div>
+
       <div>
-        {' '}
-        {/* Added a parent div here */}
         <VisionSection sectionData={visionSectionData} />
+
         <section id="expertise">
           <ExpertiseSection />
         </section>
+
         <section id="projects">
           <ProjectsSection />
         </section>
+
         <section id="achievements">
           <AchievementsSection />
         </section>
+
+        {/* If you want blogs on the home page, uncomment this: */}
+        {/* <section id="blogs">
+          <BlogsSection />
+        </section> */}
+
         <ContactSection />
-      </div>{' '}
-      {/* Closing the parent div */}
+      </div>
+
       {/* Footer */}
       <footer className="border-t border-border py-8">
         <div className="container mx-auto px-6 text-center text-sm text-muted-foreground">
-          <p>&copy; 2025 RanStack Solutions. All Rights Reserverd. </p>
+          <p>&copy; 2025 RanStack Solutions. All Rights Reserverd.</p>
           <p className="mt-2">
             Proudly built by{' '}
             <a
@@ -100,6 +117,7 @@ const Index = () => {
           </p>
         </div>
       </footer>
+
       <HireMePopup
         open={isHireMePopupOpen}
         onOpenChange={setIsHireMePopupOpen}

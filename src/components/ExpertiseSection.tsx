@@ -75,7 +75,7 @@ const ExpertiseSection: React.FC = () => {
       showLoading();
       try {
         const response = await fetch(
-          'http://localhost:5000/api/sections/expertise-section'
+          `${import.meta.env.VITE_API_URL}/api/sections/expertise-section`
         );
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);

@@ -96,13 +96,13 @@ const AchievementsSection = () => {
       showLoading();
       try {
         const sectionResponse = await fetch(
-          'http://localhost:5000/api/sections/achievements-section'
+          `${import.meta.env.VITE_API_URL}/api/sections/achievements-section`
         );
         if (!sectionResponse.ok) throw new Error('Failed fetching section');
         setSectionContent(await sectionResponse.json());
 
         const dataResponse = await fetch(
-          'http://localhost:5000/api/achievements'
+          `${import.meta.env.VITE_API_URL}/api/achievements`
         );
         const achievementsData = await dataResponse.json();
         if (achievementsData.success)

@@ -20,7 +20,7 @@ const BlogPage = () => {
     const fetchBlog = async () => {
       try {
         const response = await fetch(
-          `http://localhost:5000/api/blogs/${slug}`
+          `${import.meta.env.VITE_API_URL}/api/blogs/${slug}`
         );
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);

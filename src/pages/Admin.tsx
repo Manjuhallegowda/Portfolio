@@ -24,15 +24,10 @@ import AchievementEditor from '@/components/AchievementEditor';
 import SectionEditor from '@/components/SectionEditor';
 import ContactEditor from '@/components/ContactEditor';
 import { Blog } from '@/interfaces/Blog';
-import {
-  FileText,
-  Layers3,
-  Award,
-  LayoutTemplate,
-  Inbox,
-  Users,
-} from 'lucide-react';
+import { FileText, Layers3, Award, Inbox, Users } from 'lucide-react';
 import type { Project } from '@/interfaces/project';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL as string;
 
 interface Contact {
   id: string;
@@ -147,7 +142,7 @@ const Admin = () => {
 
       const firebaseIdToken = await firebaseUser.getIdToken();
 
-      const response = await fetch('http://localhost:5000/api/auth/login', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -201,22 +196,22 @@ const Admin = () => {
         achievementsRes,
         sectionsRes,
       ] = await Promise.all([
-        fetch('http://localhost:5000/api/admin/dashboard', {
+        fetch(`${API_BASE_URL}/api/admin/dashboard`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch('http://localhost:5000/api/blogs/admin/all?limit=10', {
+        fetch(`${API_BASE_URL}/api/blogs/admin/all?limit=10`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch('http://localhost:5000/api/projects/admin/all?limit=10', {
+        fetch(`${API_BASE_URL}/api/projects/admin/all?limit=10`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch('http://localhost:5000/api/contact?limit=10', {
+        fetch(`${API_BASE_URL}/api/contact?limit=10`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch('http://localhost:5000/api/achievements/admin/all', {
+        fetch(`${API_BASE_URL}/api/achievements/admin/all`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch('http://localhost:5000/api/sections', {
+        fetch(`${API_BASE_URL}/api/sections`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
@@ -317,8 +312,8 @@ const Admin = () => {
 
     const isEditing = !!editingBlog;
     const url = isEditing
-      ? `http://localhost:5000/api/blogs/${editingBlog?.id}`
-      : 'http://localhost:5000/api/blogs';
+      ? `${API_BASE_URL}/api/blogs/${editingBlog?.id}`
+      : `${API_BASE_URL}/api/blogs`;
     const method = isEditing ? 'PUT' : 'POST';
 
     try {
@@ -352,8 +347,8 @@ const Admin = () => {
 
     const isEditing = !!editingProject;
     const url = isEditing
-      ? `http://localhost:5000/api/projects/${editingProject?.id}`
-      : 'http://localhost:5000/api/projects';
+      ? `${API_BASE_URL}/api/projects/${editingProject?.id}`
+      : `${API_BASE_URL}/api/projects`;
     const method = isEditing ? 'PUT' : 'POST';
 
     try {
@@ -389,8 +384,8 @@ const Admin = () => {
 
     const isEditing = !!editingAchievement;
     const url = isEditing
-      ? `http://localhost:5000/api/achievements/${editingAchievement?.id}`
-      : 'http://localhost:5000/api/achievements';
+      ? `${API_BASE_URL}/api/achievements/${editingAchievement?.id}`
+      : `${API_BASE_URL}/api/achievements`;
     const method = isEditing ? 'PUT' : 'POST';
 
     try {
@@ -427,8 +422,8 @@ const Admin = () => {
 
     const isEditing = !!section.id;
     const url = isEditing
-      ? `http://localhost:5000/api/sections/${section.id}`
-      : 'http://localhost:5000/api/sections';
+      ? `${API_BASE_URL}/api/sections/${section.id}`
+      : `${API_BASE_URL}/api/sections`;
     const method = isEditing ? 'PUT' : 'POST';
 
     const { id, createdAt, updatedAt, isPublished, ...rest } = section;
@@ -471,7 +466,7 @@ const Admin = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/contact/${editingContact.id}/reply`,
+        `${API_BASE_URL}/api/contact/${editingContact.id}/reply`,
         {
           method: 'POST',
           headers: {
@@ -500,17 +495,14 @@ const Admin = () => {
     if (!token) return;
 
     try {
-      const response = await fetch(
-        `http://localhost:5000/api/blogs/${blogId}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ is_published: !currentStatus }),
-        }
-      );
+      const response = await fetch(`${API_BASE_URL}/api/blogs/${blogId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ is_published: !currentStatus }),
+      });
 
       if (response.ok) {
         setBlogs((prev) =>
@@ -535,7 +527,7 @@ const Admin = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/projects/${projectId}`,
+        `${API_BASE_URL}/api/projects/${projectId}`,
         {
           method: 'PUT',
           headers: {
@@ -569,7 +561,7 @@ const Admin = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/achievements/${achievementId}`,
+        `${API_BASE_URL}/api/achievements/${achievementId}`,
         {
           method: 'PUT',
           headers: {
@@ -603,7 +595,7 @@ const Admin = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/sections/${sectionId}`,
+        `${API_BASE_URL}/api/sections/${sectionId}`,
         {
           method: 'PUT',
           headers: {
@@ -638,17 +630,14 @@ const Admin = () => {
     if (!token) return;
 
     try {
-      const response = await fetch(
-        `http://localhost:5000/api/contact/${contactId}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ is_read: !currentStatus }),
-        }
-      );
+      const response = await fetch(`${API_BASE_URL}/api/contact/${contactId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ is_read: !currentStatus }),
+      });
 
       if (response.ok) {
         setContacts((prev) =>
@@ -669,15 +658,12 @@ const Admin = () => {
     if (!token) return;
 
     try {
-      const response = await fetch(
-        `http://localhost:5000/api/${resource}/${id}`,
-        {
-          method: 'DELETE',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await fetch(`${API_BASE_URL}/api/${resource}/${id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (response.ok) {
         setSuccess(`${resource} deleted successfully!`);
@@ -692,7 +678,7 @@ const Admin = () => {
     if (!token) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/sections/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/sections/${id}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -1101,7 +1087,8 @@ const Admin = () => {
                       <div className="flex justify-between text-sm text-muted-foreground">
                         <span>{project.category}</span>
                         <span>
-                          {new Date(project.createdAt).toLocaleDateString()}
+                          {project.createdAt &&
+                            new Date(project.createdAt).toLocaleDateString()}
                         </span>
                       </div>
                     </CardContent>
@@ -1186,7 +1173,10 @@ const Admin = () => {
                       <div className="flex justify-between text-sm text-muted-foreground">
                         <span>{achievement.category}</span>
                         <span>
-                          {new Date(achievement.createdAt).toLocaleDateString()}
+                          {achievement.createdAt &&
+                            new Date(
+                              achievement.createdAt
+                            ).toLocaleDateString()}
                         </span>
                       </div>
                     </CardContent>

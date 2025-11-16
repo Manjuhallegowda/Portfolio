@@ -31,8 +31,8 @@ const HeroSection = () => {
     const fetchHeroSection = async () => {
       showLoading();
       try {
-        const response = await fetch(
-          'http://localhost:5000/api/sections/hero-section'
+        const sectionResponse = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/sections/hero-section`
         );
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
