@@ -132,12 +132,12 @@ const BlogPage = () => {
           </motion.div>
 
           <motion.div
-            className="prose prose-invert max-w-none" // Using prose for better markdown rendering
+            className="prose prose-invert max-w-none whitespace-pre-wrap" // Using prose for better markdown rendering
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            <div dangerouslySetInnerHTML={{ __html: blog.content }} />
+            {blog.content}
           </motion.div>
         </div>
       </motion.div>

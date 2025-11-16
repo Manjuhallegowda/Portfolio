@@ -11,26 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from './ui/switch';
-
-interface Project {
-  id?: string;
-  title: string;
-  slug: string;
-  description: string;
-  long_description: string;
-  technologies: string[];
-  category: string;
-  images: string[] | File[];
-  featured_image_url?: string;
-  demo_url: string;
-  source_url: string;
-  status: string;
-  is_featured: boolean;
-  order: number;
-  isPublished?: boolean;
-  createdAt?: string;
-  updatedAt?: string;
-}
+import type { Project } from '@/interfaces/Project';
 
 interface ProjectEditorProps {
   open: boolean;
@@ -52,9 +33,13 @@ const ProjectEditor = ({
   const [technologies, setTechnologies] = useState('');
   const [category, setCategory] = useState('');
   const [images, setImages] = useState<File[]>([]);
+  const [existingImages, setExistingImages] = useState<string[]>([]);
   const [featuredImage, setFeaturedImage] = useState<File | null>(null);
+  const [existingFeaturedImage, setExistingFeaturedImage] = useState<
+    string | undefined
+  >(undefined);
   const [demoUrl, setDemoUrl] = useState('');
-  const [sourceUrl, setSourceUrl] = useState('');
+  const [githubUrl, setGithubUrl] = useState('');
   const [status, setStatus] = useState('');
   const [isFeatured, setIsFeatured] = useState(false);
   const [order, setOrder] = useState(0);
@@ -72,14 +57,16 @@ const ProjectEditor = ({
       setTitle(project.title || '');
       setSlug(project.slug || '');
       setDescription(project.description || '');
-      setLongDescription(project.long_description || '');
+      setLongDescription(project.longDescription || '');
       setTechnologies((project.technologies || []).join(', '));
       setCategory(project.category || '');
-      setDemoUrl(project.demo_url || '');
-      setSourceUrl(project.source_url || '');
+      setDemoUrl(project.demoUrl || '');
+      setGithubUrl(project.githubUrl || '');
       setStatus(project.status || '');
-      setIsFeatured(project.is_featured || false);
+      setIsFeatured(project.isFeatured || false);
       setOrder(project.order || 0);
+      setExistingFeaturedImage(project.featuredImageUrl);
+      setExistingImages(project.images || []);
     } else {
       setTitle('');
       setSlug('');
@@ -88,31 +75,40 @@ const ProjectEditor = ({
       setTechnologies('');
       setCategory('');
       setDemoUrl('');
-      setSourceUrl('');
+      setGithubUrl('');
       setStatus('');
       setIsFeatured(false);
       setOrder(0);
+      setExistingFeaturedImage(undefined);
+      setExistingImages([]);
+      setImages([]);
+      setFeaturedImage(null);
     }
   }, [project]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const formData = new FormData();
+
+    // These keys match what your backend destructures:
+    // title, description, longDescription, technologies, category,
+    // demoUrl, githubUrl, status, isFeatured, order, isPublished (if you add it later).
     formData.append('title', title);
     formData.append('slug', slug);
     formData.append('description', description);
-    formData.append('long_description', longDescription);
+    formData.append('longDescription', longDescription);
     formData.append('technologies', technologies);
     formData.append('category', category);
-    formData.append('demo_url', demoUrl);
-    formData.append('source_url', sourceUrl);
+    formData.append('demoUrl', demoUrl);
+    formData.append('githubUrl', githubUrl);
     formData.append('status', status);
-    formData.append('is_featured', String(isFeatured));
+    formData.append('isFeatured', String(isFeatured));
     formData.append('order', String(order));
 
     if (featuredImage) {
       formData.append('featuredImage', featuredImage);
     }
+
     images.forEach((image) => {
       formData.append('images', image);
     });
@@ -120,6 +116,7 @@ const ProjectEditor = ({
     if (project?.id) {
       formData.append('id', project.id);
     }
+
     onSave(formData);
   };
 
@@ -220,12 +217,12 @@ const ProjectEditor = ({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="source_url">Source URL</Label>
+            <Label htmlFor="github_url">GitHub URL</Label>
             <Input
-              id="source_url"
-              name="source_url"
-              value={sourceUrl}
-              onChange={(e) => setSourceUrl(e.target.value)}
+              id="github_url"
+              name="github_url"
+              value={githubUrl}
+              onChange={(e) => setGithubUrl(e.target.value)}
               autoComplete="off"
             />
           </div>
@@ -261,6 +258,15 @@ const ProjectEditor = ({
           </div>
           <div className="space-y-2">
             <Label htmlFor="featuredImage">Featured Image</Label>
+            {existingFeaturedImage && (
+              <div className="mb-2">
+                <img
+                  src={existingFeaturedImage}
+                  alt="Featured"
+                  className="w-20 h-20 object-cover rounded-md"
+                />
+              </div>
+            )}
             <Input
               id="featuredImage"
               name="featuredImage"
@@ -270,14 +276,24 @@ const ProjectEditor = ({
           </div>
           <div className="space-y-2">
             <Label htmlFor="images">Additional Images</Label>
+            {existingImages.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-2">
+                {existingImages.map((url, index) => (
+                  <img
+                    key={index}
+                    src={url}
+                    alt={`Existing ${index + 1}`}
+                    className="w-20 h-20 object-cover rounded-md"
+                  />
+                ))}
+              </div>
+            )}
             <Input
               id="images"
               name="images"
               type="file"
               multiple
-              onChange={(e) =>
-                setImages(Array.from(e.target.files || []))
-              }
+              onChange={(e) => setImages(Array.from(e.target.files || []))}
             />
           </div>
           <Button type="submit">Save</Button>

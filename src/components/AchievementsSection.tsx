@@ -197,7 +197,7 @@ const AchievementsSection = () => {
                 </div>
 
                 {item.description && (
-                  <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-4 whitespace-pre-wrap">
                     {item.description}
                   </p>
                 )}

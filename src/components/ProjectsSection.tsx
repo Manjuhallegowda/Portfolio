@@ -14,8 +14,8 @@ interface Project {
   category: string;
   images?: string[];
   featured_image_url?: string;
-  demoUrl?: string;
-  sourceUrl?: string;
+  demo_url?: string;
+  github_url?: string;
   status: string;
   isFeatured: boolean;
   order: number;
@@ -242,7 +242,7 @@ const ProjectsSection = () => {
                       {project.title}
                     </h3>
 
-                    <p className="text-muted-foreground mb-5 leading-relaxed">
+                    <p className="text-muted-foreground mb-5 leading-relaxed whitespace-pre-wrap">
                       {project.description}
                     </p>
 
@@ -260,7 +260,7 @@ const ProjectsSection = () => {
 
                     {/* CTA buttons */}
                     <div className="flex flex-wrap gap-3 pt-4 border-t border-border/70">
-                      {project.demoUrl && (
+                      {project.demo_url && (
                         <Button
                           key={`${project.id}-demo-button`}
                           variant="outline"
@@ -269,7 +269,7 @@ const ProjectsSection = () => {
                           asChild
                         >
                           <a
-                            href={project.demoUrl}
+                            href={project.demo_url}
                             target="_blank"
                             rel="noopener noreferrer"
                           >
@@ -278,7 +278,7 @@ const ProjectsSection = () => {
                           </a>
                         </Button>
                       )}
-                      {project.sourceUrl && (
+                      {project.github_url && (
                         <Button
                           key={`${project.id}-source-button`}
                           variant="outline"
@@ -287,11 +287,12 @@ const ProjectsSection = () => {
                           asChild
                         >
                           <a
-                            href={project.sourceUrl}
+                            href={project.github_url}
                             target="_blank"
                             rel="noopener noreferrer"
                           >
-                            <Github className="w-4 h-4" />
+                            <Github className="w-4 h-4 mr-2" />
+                            GitHub
                           </a>
                         </Button>
                       )}

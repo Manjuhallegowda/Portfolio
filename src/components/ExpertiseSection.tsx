@@ -164,7 +164,7 @@ const ExpertiseSection: React.FC = () => {
             {renderTitle()}
           </h2>
 
-          <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
+          <p className="text-base sm:text-lg text-muted-foreground leading-relaxed whitespace-pre-wrap">
             {sectionData.content ||
               'From ideation to deployment, I handle every aspect of building digital products that scale, perform, and feel crafted rather than cobbled together.'}
           </p>
@@ -228,7 +228,7 @@ const ExpertiseSection: React.FC = () => {
                   </div>
 
                   {/* Description */}
-                  <p className="text-sm sm:text-[0.95rem] text-muted-foreground leading-relaxed mb-5">
+                  <p className="text-sm sm:text-[0.95rem] text-muted-foreground leading-relaxed mb-5 whitespace-pre-wrap">
                     {area.description}
                   </p>
 

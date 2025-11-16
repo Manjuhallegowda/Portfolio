@@ -32,26 +32,7 @@ import {
   Inbox,
   Users,
 } from 'lucide-react';
-
-interface Project {
-  id: string;
-  title: string;
-  slug: string;
-  description: string;
-  long_description: string;
-  technologies: string[];
-  category: string;
-  images: string[];
-  featured_image_url: string;
-  demo_url: string;
-  source_url: string;
-  status: string;
-  is_featured: boolean;
-  order: number;
-  isPublished: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
+import type { Project } from '@/interfaces/project';
 
 interface Contact {
   id: string;
@@ -265,7 +246,20 @@ const Admin = () => {
       if (projectsData.success) {
         const transformedProjects: Project[] = projectsData.data.map(
           (project: any) => ({
-            ...project,
+            id: project.id,
+            title: project.title,
+            slug: project.slug,
+            description: project.description,
+            longDescription: project.long_description,
+            technologies: project.technologies,
+            category: project.category,
+            images: project.images,
+            featuredImageUrl: project.featured_image_url,
+            demoUrl: project.demo_url,
+            githubUrl: project.github_url,
+            status: project.status,
+            isFeatured: project.is_featured,
+            order: project.order,
             isPublished: project.is_published,
             createdAt: project.created_at,
             updatedAt: project.updated_at,
@@ -521,7 +515,9 @@ const Admin = () => {
       if (response.ok) {
         setBlogs((prev) =>
           prev.map((blog) =>
-            blog.id === blogId ? { ...blog, is_published: !currentStatus } : blog
+            blog.id === blogId
+              ? { ...blog, is_published: !currentStatus }
+              : blog
           )
         );
         setSuccess('Blog status updated successfully!');
@@ -986,7 +982,9 @@ const Admin = () => {
                         </div>
                         <div className="flex flex-wrap gap-2 justify-end">
                           <Badge
-                            variant={blog.is_published ? 'default' : 'secondary'}
+                            variant={
+                              blog.is_published ? 'default' : 'secondary'
+                            }
                           >
                             {blog.is_published ? 'Published' : 'Draft'}
                           </Badge>

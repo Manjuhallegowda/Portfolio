@@ -209,7 +209,7 @@ const ContactSection = () => {
               </motion.h2>
 
               <motion.p
-                className="text-lg text-muted-foreground leading-relaxed max-w-xl"
+                className="text-lg text-muted-foreground leading-relaxed max-w-xl whitespace-pre-wrap"
                 initial={{ opacity: 0, y: 20 }}
                 animate={inView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.5, delay: 0.25 }}
@@ -288,7 +288,7 @@ const ContactSection = () => {
                 </span>
               </motion.p>
               <motion.p
-                className="text-xs leading-relaxed max-w-md"
+                className="text-xs leading-relaxed max-w-md whitespace-pre-wrap"
                 initial={{ opacity: 0, y: 15 }}
                 animate={inView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.5, delay: 0.8 }}

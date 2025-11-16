@@ -219,7 +219,7 @@ const BlogsSection = () => {
                   </CardHeader>
 
                   <CardContent className="pb-5">
-                    <CardDescription className="mb-4 text-sm text-muted-foreground line-clamp-3">
+                    <CardDescription className="mb-4 text-sm text-muted-foreground line-clamp-3 whitespace-pre-wrap">
                       {blog.excerpt}
                     </CardDescription>
                     <div className="flex flex-wrap gap-2">

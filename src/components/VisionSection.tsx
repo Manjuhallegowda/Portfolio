@@ -7,6 +7,14 @@ import {
   type Variants,
 } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
+import {
+  Mail,
+  Linkedin,
+  GithubIcon,
+  Twitter,
+  Instagram,
+  type LucideIcon,
+} from 'lucide-react';
 
 interface SectionContent {
   title?: string;
@@ -227,30 +235,116 @@ const VisionSection: React.FC<VisionSectionProps> = ({ sectionData }) => {
               </motion.span>
             </div>
 
-            {/* Heading */}
-            <motion.div className="space-y-4" variants={itemVariants}>
-              <motion.h2
-                className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight tracking-tight"
-                initial={{ opacity: 0, x: -40 }}
-                animate={inView ? { opacity: 1, x: 0 } : {}}
-                transition={{ duration: 0.8, delay: 0.1 }}
-              >
-                {sectionData?.title ? (
-                  sectionData.title
-                ) : (
-                  <>
-                    Great products aren&apos;t{' '}
-                    <span className="bg-gradient-to-r from-accent to-amber-400 bg-clip-text text-transparent">
-                      assembled
-                    </span>
-                    —they&apos;re{' '}
-                    <span className="bg-gradient-to-r from-amber-400 to-accent bg-clip-text text-transparent">
-                      engineered
-                    </span>{' '}
-                    through code, strategy & relentless iteration.
-                  </>
-                )}
-              </motion.h2>
+            {/* Heading*/}
+            <motion.div className="space-y-7" variants={itemVariants}>
+              {/* Floating quote / image card */}
+              <motion.div className="space-y-7" variants={itemVariants}>
+                {/* Floating quote / image card */}
+                <motion.div
+                  className="relative w-full max-w-2xl mr-auto rounded-[2.5rem] border border-border/70 bg-gradient-to-br from-background/90 via-background/70 to-background/60 backdrop-blur-xl p-8 sm:p-10 shadow-xl shadow-black/20"
+                  initial={{ opacity: 0, x: -40, scale: 0.96 }}
+                  animate={inView ? { opacity: 1, x: 0, scale: 1 } : {}}
+                  transition={{
+                    duration: 0.7,
+                    delay: 0.25,
+                    ease: [0.16, 1, 0.3, 1],
+                  }}
+                >
+                  {/* Glow shadow */}
+                  <div className="absolute -inset-1 rounded-[2rem] bg-gradient-to-br from-accent/30 via-amber-400/20 to-transparent blur-2xl opacity-60" />
+
+                  <div className="relative rounded-[2rem] border border-border/70 bg-gradient-to-br from-background/90 via-background/70 to-background/60 backdrop-blur-xl p-6 sm:p-7 shadow-xl shadow-black/20">
+                    {/* Avatar + text + Social icons */}
+                    <div className="flex items-start gap-4 mb-5">
+                      {/* IMAGE */}
+                      <div className="relative h-50 w-40 rounded-2xl overflow-hidden bg-accent/10 flex items-center justify-center">
+                        <img
+                          src={quoteImageUrl}
+                          alt={sectionData?.images?.[0]?.alt || 'Vision'}
+                          className="h-full w-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-tr from-background/40 via-transparent to-accent/20" />
+                      </div>
+
+                      {/* TEXT AREA */}
+                      <div className="flex-1 flex flex-col pt-1">
+                        {/* Product Title + Icons Row */}
+                        <div className="flex items-center justify-between mb-6">
+                          <div>
+                            <div className="text-xs font-medium tracking-[0.18em] uppercase text-muted-foreground">
+                              Product Philosophy
+                            </div>
+                            <div className="text-sm font-semibold text-foreground">
+                              From 0 → 1 → Scale
+                            </div>
+                          </div>
+
+                          {/* Social Icons */}
+                          <div className="flex items-center gap-3 ml-auto pl-4">
+                            <a
+                              href="https://twitter.com"
+                              target="_blank"
+                              className="hover:text-foreground text-muted-foreground"
+                            >
+                              <Twitter className="h-5 w-5" />
+                            </a>
+                            <a
+                              href="https://linkedin.com"
+                              target="_blank"
+                              className="hover:text-foreground text-muted-foreground"
+                            >
+                              <Linkedin className="h-5 w-5" />
+                            </a>
+                            <a
+                              href="https://github.com"
+                              target="_blank"
+                              className="hover:text-foreground text-muted-foreground"
+                            >
+                              <GithubIcon className="h-5 w-5" />
+                            </a>
+                          </div>
+                        </div>
+
+                        {/* Center Quote */}
+                        <p className="mt-4 text-center mx-auto max-w-lg text-sm sm:text-base text-muted-foreground leading-relaxed italic whitespace-pre-wrap">
+                          {sectionData?.title ? (
+                            <>“{sectionData.title}”</>
+                          ) : (
+                            <>
+                              “Great products aren&apos;t{' '}
+                              <span className="bg-gradient-to-r from-accent to-amber-400 bg-clip-text text-transparent">
+                                assembled
+                              </span>
+                              —they&apos;re{' '}
+                              <span className="bg-gradient-to-r from-amber-400 to-accent bg-clip-text text-transparent">
+                                engineered
+                              </span>{' '}
+                              through code, strategy & relentless iteration.”
+                            </>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Footer Row */}
+                    <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <span className="inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+                        <span>Hands-on founder in every release cycle</span>
+                      </div>
+
+                      <a
+                        href={companyUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs font-medium text-accent hover:underline"
+                      >
+                        Visit {companyName} ↗
+                      </a>
+                    </div>
+                  </div>
+                </motion.div>
+              </motion.div>
 
               <motion.div
                 className="h-1.5 w-28 rounded-full bg-gradient-to-r from-accent via-amber-400 to-transparent"
@@ -259,10 +353,36 @@ const VisionSection: React.FC<VisionSectionProps> = ({ sectionData }) => {
                 transition={{ duration: 0.7, delay: 0.25 }}
               />
             </motion.div>
+          </motion.div>
 
-            {/* Content */}
+          {/* Right: Visual + Stats stack */}
+          <motion.div
+            className="lg:col-span-5 relative"
+            variants={itemVariants}
+          >
+            {/* Founder badge */}
+            <motion.div
+              className="flex items-center gap-4 pt-4 mb-8"
+              initial={{ opacity: 0, y: 10 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.5, delay: 0.55 }}
+            >
+              <div className="h-10 w-10 rounded-2xl bg-accent/10 border border-accent/40 flex items-center justify-center text-lg">
+                ⚙️
+              </div>
+              <div className="space-y-1">
+                <div className="text-sm font-semibold tracking-wide uppercase text-foreground/80">
+                  Founder • Builder • Engineer
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Shipping production-grade products, not just prototypes.
+                </p>
+              </div>
+            </motion.div>
+
+            {/* Content*/}
             <motion.p
-              className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-2xl"
+              className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-2xl mb-4 sm:mb-6 whitespace-pre-wrap"
               initial={{ opacity: 0, y: 20 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, delay: 0.35 }}
@@ -296,87 +416,6 @@ const VisionSection: React.FC<VisionSectionProps> = ({ sectionData }) => {
                 ))}
               </motion.div>
             )}
-
-            {/* Founder badge */}
-            <motion.div
-              className="flex items-center gap-4 pt-4"
-              initial={{ opacity: 0, y: 10 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5, delay: 0.55 }}
-            >
-              <div className="h-10 w-10 rounded-2xl bg-accent/10 border border-accent/40 flex items-center justify-center text-lg">
-                ⚙️
-              </div>
-              <div className="space-y-1">
-                <div className="text-sm font-semibold tracking-wide uppercase text-foreground/80">
-                  Founder • Builder • Engineer
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Shipping production-grade products, not just prototypes.
-                </p>
-              </div>
-            </motion.div>
-          </motion.div>
-
-          {/* Right: Visual + Stats stack */}
-          <motion.div
-            className="lg:col-span-5 relative"
-            variants={itemVariants}
-          >
-            {/* Floating quote / image card */}
-            <motion.div
-              className="relative max-w-md ml-auto"
-              initial={{ opacity: 0, x: 40, scale: 0.96 }}
-              animate={inView ? { opacity: 1, x: 0, scale: 1 } : {}}
-              transition={{
-                duration: 0.7,
-                delay: 0.25,
-                ease: [0.16, 1, 0.3, 1],
-              }}
-            >
-              {/* Glow shadow */}
-              <div className="absolute -inset-1 rounded-[2rem] bg-gradient-to-br from-accent/30 via-amber-400/20 to-transparent blur-2xl opacity-60" />
-
-              <div className="relative rounded-[2rem] border border-border/70 bg-gradient-to-br from-background/90 via-background/70 to-background/60 backdrop-blur-xl p-6 sm:p-7 shadow-xl shadow-black/20">
-                <div className="flex items-center gap-4 mb-5">
-                  <div className="relative h-14 w-14 rounded-2xl overflow-hidden bg-accent/10 flex items-center justify-center">
-                    <img
-                      src={quoteImageUrl}
-                      alt={sectionData?.images?.[0]?.alt || 'Vision'}
-                      className="h-full w-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-tr from-background/40 via-transparent to-accent/20" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-medium tracking-[0.18em] uppercase text-muted-foreground">
-                      Product Philosophy
-                    </div>
-                    <div className="text-sm font-semibold text-foreground">
-                      From 0 → 1 → Scale
-                    </div>
-                  </div>
-                </div>
-
-                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                  {`I architect systems end-to-end — from UX flows and data models to deployment pipelines — so the product vision survives every layer of implementation.`}
-                </p>
-
-                <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span className="inline-flex h-2 w-2 rounded-full bg-emerald-400" />
-                    <span>Hands-on founder in every release cycle</span>
-                  </div>
-                  <a
-                    href={companyUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs font-medium text-accent hover:underline"
-                  >
-                    Visit {companyName} ↗
-                  </a>
-                </div>
-              </div>
-            </motion.div>
 
             {/* Stats cards cluster */}
             <div className="mt-8 grid grid-cols-3 gap-4 sm:gap-5">

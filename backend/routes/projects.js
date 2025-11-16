@@ -146,7 +146,10 @@ router.post(
     body('githubUrl').optional().isURL(),
     body('liveUrl').optional().isURL(),
   ],
-  upload.single('featuredImage'),
+  upload.fields([
+    { name: 'featuredImage', maxCount: 1 },
+    { name: 'images', maxCount: 10 },
+  ]),
   async (req, res) => {
     try {
       const {
@@ -156,7 +159,7 @@ router.post(
         technologies,
         category,
         demoUrl,
-        sourceUrl,
+        githubUrl,
         status,
         isFeatured,
         order,
@@ -164,21 +167,32 @@ router.post(
       } = req.body;
       const slug = generateSlug(title);
 
-      let featuredImagePublicId = null;
       let featuredImageUrl = null;
-      let featuredImageAlt = null;
+      const imageUrls = [];
 
-      // Upload image to Cloudflare R2 if provided
-      if (req.file) {
+      // Upload featured image if provided
+      if (req.files && req.files.featuredImage) {
+        const file = req.files.featuredImage[0];
         const result = await uploadToR2(
-          req.file.buffer,
-          req.file.originalname,
-          req.file.mimetype,
+          file.buffer,
+          file.originalname,
+          file.mimetype,
           'portfolio/projects'
         );
-        featuredImagePublicId = result.public_id;
         featuredImageUrl = result.url;
-        featuredImageAlt = title; // Default alt text
+      }
+
+      // Upload gallery images if provided
+      if (req.files && req.files.images) {
+        for (const file of req.files.images) {
+          const result = await uploadToR2(
+            file.buffer,
+            file.originalname,
+            file.mimetype,
+            'portfolio/projects'
+          );
+          imageUrls.push(result.url);
+        }
       }
 
       const { data, error } = await supabase
@@ -189,11 +203,20 @@ router.post(
             slug,
             description,
             long_description: longDescription,
-            technologies: technologies ? `{${technologies.split(',').map(t => `"${t.trim()}"`).join(',')}}` : null,
+            technologies: technologies
+              ? `{${technologies
+                  .split(',')
+                  .map((t) => `"${t.trim()}"`)
+                  .join(',')}}`
+              : null,
             category: category || 'web',
             featured_image_url: featuredImageUrl,
+            images:
+              imageUrls.length > 0
+                ? `{${imageUrls.map((url) => `"${url}"`).join(',')}}`
+                : null,
             demo_url: demoUrl,
-            source_url: sourceUrl,
+            github_url: githubUrl,
             status: status || 'completed',
             is_featured: isFeatured === 'true' || false,
             order: order ? parseInt(order, 10) : 0,
@@ -241,12 +264,15 @@ router.put(
     body('liveUrl').optional().isURL(),
     body('isPublished').optional().isBoolean(),
   ],
-  upload.single('featuredImage'),
+  upload.fields([
+    { name: 'featuredImage', maxCount: 1 },
+    { name: 'images', maxCount: 10 },
+  ]),
   async (req, res) => {
     try {
       const { data: existingProjects, error: fetchError } = await supabase
         .from('projects')
-        .select('featured_image_url, title, is_published')
+        .select('featured_image_url, images, title, is_published')
         .eq('id', req.params.id);
 
       if (fetchError) {
@@ -273,7 +299,7 @@ router.put(
         technologies,
         category,
         demoUrl,
-        sourceUrl,
+        github_url,
         status,
         isFeatured,
         order,
@@ -288,32 +314,65 @@ router.put(
       if (description) updatePayload.description = description;
       if (longDescription) updatePayload.long_description = longDescription;
       if (technologies) {
-        const techArray = technologies.split(',').map(t => `"${t.trim()}"`);
+        const techArray = technologies.split(',').map((t) => `"${t.trim()}"`);
         updatePayload.technologies = `{${techArray.join(',')}}`;
       }
       if (category) updatePayload.category = category;
       if (demoUrl) updatePayload.demo_url = demoUrl;
-      if (sourceUrl) updatePayload.source_url = sourceUrl;
+      if (github_url) updatePayload.github_url = github_url;
       if (status) updatePayload.status = status;
-      if (isFeatured !== undefined) updatePayload.is_featured = isFeatured === 'true';
+      if (isFeatured !== undefined)
+        updatePayload.is_featured = isFeatured === 'true';
       if (order !== undefined) updatePayload.order = parseInt(order, 10);
       if (isPublished !== undefined) updatePayload.is_published = isPublished;
 
-      // Upload new image if provided
-      if (req.file) {
-        // Delete old image from Cloudflare R2
+      // Upload new featured image if provided
+      if (req.files && req.files.featuredImage) {
+        // Delete old featured image from Cloudflare R2
         if (existingProject.featured_image_url) {
-          const oldKey = existingProject.featured_image_url.replace(`${process.env.R2_PUBLIC_URL}/`, '');
+          const oldKey = existingProject.featured_image_url.replace(
+            `${process.env.R2_PUBLIC_URL}/`,
+            ''
+          );
           await deleteFromR2(oldKey);
         }
 
+        const file = req.files.featuredImage[0];
         const result = await uploadToR2(
-          req.file.buffer,
-          req.file.originalname,
-          req.file.mimetype,
+          file.buffer,
+          file.originalname,
+          file.mimetype,
           'portfolio/projects'
         );
         updatePayload.featured_image_url = result.url;
+      }
+
+      // Upload new gallery images if provided
+      if (req.files && req.files.images) {
+        // Delete old gallery images from Cloudflare R2
+        if (existingProject.images && existingProject.images.length > 0) {
+          for (const imageUrl of existingProject.images) {
+            const oldKey = imageUrl.replace(
+              `${process.env.R2_PUBLIC_URL}/`,
+              ''
+            );
+            await deleteFromR2(oldKey);
+          }
+        }
+
+        const imageUrls = [];
+        for (const file of req.files.images) {
+          const result = await uploadToR2(
+            file.buffer,
+            file.originalname,
+            file.mimetype,
+            'portfolio/projects'
+          );
+          imageUrls.push(result.url);
+        }
+        updatePayload.images = `{${imageUrls
+          .map((url) => `"${url}"`)
+          .join(',')}}`;
       }
 
       const { data, error } = await supabase
@@ -358,7 +417,7 @@ router.delete('/:id', protect, authorize('admin'), async (req, res) => {
   try {
     const { data: existingProjects, error: fetchError } = await supabase
       .from('projects')
-      .select('featured_image_url')
+      .select('featured_image_url, images')
       .eq('id', req.params.id);
 
     if (fetchError) {
@@ -378,13 +437,27 @@ router.delete('/:id', protect, authorize('admin'), async (req, res) => {
 
     const existingProject = existingProjects[0];
 
-    // Delete image from Cloudflare R2
+    // Delete featured image from Cloudflare R2
     if (existingProject.featured_image_url) {
-      const key = existingProject.featured_image_url.replace(`${process.env.R2_PUBLIC_URL}/`, '');
+      const key = existingProject.featured_image_url.replace(
+        `${process.env.R2_PUBLIC_URL}/`,
+        ''
+      );
       await deleteFromR2(key);
     }
 
-    const { error } = await supabase.from('projects').delete().eq('id', req.params.id);
+    // Delete gallery images from Cloudflare R2
+    if (existingProject.images && existingProject.images.length > 0) {
+      for (const imageUrl of existingProject.images) {
+        const key = imageUrl.replace(`${process.env.R2_PUBLIC_URL}/`, '');
+        await deleteFromR2(key);
+      }
+    }
+
+    const { error } = await supabase
+      .from('projects')
+      .delete()
+      .eq('id', req.params.id);
 
     if (error) {
       console.error('Supabase delete error:', error);
