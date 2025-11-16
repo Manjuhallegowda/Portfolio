@@ -25,7 +25,7 @@ import SectionEditor from '@/components/SectionEditor';
 import ContactEditor from '@/components/ContactEditor';
 import { Blog } from '@/interfaces/Blog';
 import { FileText, Layers3, Award, Inbox, Users } from 'lucide-react';
-import type { Project } from '@/interfaces/project';
+import type { Project } from '@/interfaces/Project';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL as string;
 

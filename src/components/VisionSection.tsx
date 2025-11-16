@@ -15,6 +15,7 @@ import {
   Instagram,
   type LucideIcon,
 } from 'lucide-react';
+import fallbackImage from '@/assets/image.png';
 
 interface SectionContent {
   title?: string;
@@ -124,8 +125,7 @@ const VisionSection: React.FC<VisionSectionProps> = ({ sectionData }) => {
   const quoteImageUrl =
     sectionData?.images && sectionData.images.length > 0
       ? sectionData.images[0].url
-      : '/src/assets/image.png';
-
+      : fallbackImage;
   const companyName =
     sectionData?.metadata?.companyName || 'RanStack Solutions';
   const companyUrl =
