@@ -13,18 +13,42 @@ import contactRoutes from './routes/contact.js';
 import achievementRoutes from './routes/achievements.js';
 import adminRoutes from './routes/admin.js';
 import sectionsRoutes from './routes/sections.js';
+import seedDefaultSections from './utils/seed.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(helmet());
+
+// ✅ CORS setup (dev + prod)
+const allowedOrigins = [
+  process.env.FRONTEND_URL, // from env (Render)
+  'http://localhost:5173', // Vite dev
+  'http://localhost:3000', // (optional) Next/React dev
+  'http://localhost:8080', // your earlier local URL
+  'https://codewithmj.netlify.app', // Netlify production
+].filter(Boolean); // remove undefined
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:8080',
+    origin(origin, callback) {
+      // Allow non-browser tools (Postman, curl) with no Origin
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      console.warn(`❌ CORS blocked origin: ${origin}`);
+      return callback(new Error('Not allowed by CORS'));
+    },
     credentials: true,
   })
 );
+
+// Preflight requests
+app.options('*', cors());
 
 // Rate limiting
 const limiter = rateLimit({
@@ -66,7 +90,6 @@ app.use('*', (req, res) => {
 });
 
 // Seed the database with default sections
-import seedDefaultSections from './utils/seed.js';
 seedDefaultSections();
 
 app.listen(PORT, () => {
