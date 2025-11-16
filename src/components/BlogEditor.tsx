@@ -87,60 +87,73 @@ const BlogEditor = ({ open, onOpenChange, blog, onSave }: BlogEditorProps) => {
             <Label htmlFor="title">Title</Label>
             <Input
               id="title"
+              name="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
+              autoComplete="off"
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="slug">Slug</Label>
             <Input
               id="slug"
+              name="slug"
               value={slug}
               onChange={(e) => setSlug(e.target.value)}
               required
+              autoComplete="off"
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="excerpt">Excerpt</Label>
             <Textarea
               id="excerpt"
+              name="excerpt"
               value={excerpt}
               onChange={(e) => setExcerpt(e.target.value)}
               required
+              autoComplete="off"
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="content">Content</Label>
             <Textarea
               id="content"
+              name="content"
               value={content}
               onChange={(e) => setContent(e.target.value)}
               rows={10}
               required
+              autoComplete="off"
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="tags">Tags (comma-separated)</Label>
             <Input
               id="tags"
+              name="tags"
               value={tags}
               onChange={(e) => setTags(e.target.value)}
+              autoComplete="off"
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="read_time">Read Time (minutes)</Label>
             <Input
               id="read_time"
+              name="read_time"
               type="number"
               value={readTime}
               onChange={(e) => setReadTime(Number(e.target.value))}
+              autoComplete="off"
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="featuredImage">Featured Image</Label>
             <Input
               id="featuredImage"
+              name="featuredImage"
               type="file"
               onChange={(e) => setFeaturedImage(e.target.files?.[0] || null)}
             />

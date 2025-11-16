@@ -20,13 +20,16 @@ interface Project {
   long_description: string;
   technologies: string[];
   category: string;
-  images: File[];
+  images: string[] | File[];
   featured_image_url?: string;
   demo_url: string;
   source_url: string;
   status: string;
   is_featured: boolean;
   order: number;
+  isPublished?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface ProjectEditorProps {
@@ -137,53 +140,65 @@ const ProjectEditor = ({
             <Label htmlFor="title">Title</Label>
             <Input
               id="title"
+              name="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
+              autoComplete="off"
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="slug">Slug</Label>
             <Input
               id="slug"
+              name="slug"
               value={slug}
               onChange={(e) => setSlug(e.target.value)}
               required
+              autoComplete="off"
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
             <Textarea
               id="description"
+              name="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               required
+              autoComplete="off"
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="long_description">Long Description</Label>
             <Textarea
               id="long_description"
+              name="long_description"
               value={longDescription}
               onChange={(e) => setLongDescription(e.target.value)}
               rows={5}
+              autoComplete="off"
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="technologies">Technologies (comma-separated)</Label>
             <Input
               id="technologies"
+              name="technologies"
               value={technologies}
               onChange={(e) => setTechnologies(e.target.value)}
+              autoComplete="off"
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="category">Category</Label>
             <select
               id="category"
+              name="category"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               required
+              autoComplete="off"
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <option value="">Select a category</option>
@@ -198,29 +213,36 @@ const ProjectEditor = ({
             <Label htmlFor="demo_url">Demo URL</Label>
             <Input
               id="demo_url"
+              name="demo_url"
               value={demoUrl}
               onChange={(e) => setDemoUrl(e.target.value)}
+              autoComplete="off"
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="source_url">Source URL</Label>
             <Input
               id="source_url"
+              name="source_url"
               value={sourceUrl}
               onChange={(e) => setSourceUrl(e.target.value)}
+              autoComplete="off"
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="status">Status</Label>
             <Input
               id="status"
+              name="status"
               value={status}
               onChange={(e) => setStatus(e.target.value)}
+              autoComplete="off"
             />
           </div>
           <div className="flex items-center space-x-2">
             <Switch
               id="is_featured"
+              name="is_featured"
               checked={isFeatured}
               onCheckedChange={setIsFeatured}
             />
@@ -230,15 +252,18 @@ const ProjectEditor = ({
             <Label htmlFor="order">Order</Label>
             <Input
               id="order"
+              name="order"
               type="number"
               value={order}
               onChange={(e) => setOrder(Number(e.target.value))}
+              autoComplete="off"
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="featuredImage">Featured Image</Label>
             <Input
               id="featuredImage"
+              name="featuredImage"
               type="file"
               onChange={(e) => setFeaturedImage(e.target.files?.[0] || null)}
             />
@@ -247,6 +272,7 @@ const ProjectEditor = ({
             <Label htmlFor="images">Additional Images</Label>
             <Input
               id="images"
+              name="images"
               type="file"
               multiple
               onChange={(e) =>

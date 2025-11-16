@@ -17,22 +17,24 @@ const MobileMenu = ({
   location,
 }: MobileMenuProps) => {
   const navigate = useNavigate();
+
   const menuVariants = {
-    hidden: {
-      opacity: 0,
-      y: -20,
-    },
+    hidden: { opacity: 0, y: -10, scale: 0.98 },
     visible: {
       opacity: 1,
       y: 0,
+      scale: 1,
       transition: {
-        staggerChildren: 0.1,
+        duration: 0.15,
+        when: 'beforeChildren',
+        staggerChildren: 0.08,
       },
     },
+    exit: { opacity: 0, y: -10, scale: 0.97, transition: { duration: 0.12 } },
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: -10 },
+    hidden: { opacity: 0, y: -6 },
     visible: { opacity: 1, y: 0 },
   };
 
@@ -42,6 +44,7 @@ const MobileMenu = ({
       onClose();
     } else {
       navigate('/', { state: { scrollTo: sectionId } });
+      onClose();
     }
   };
 
@@ -49,10 +52,10 @@ const MobileMenu = ({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="absolute top-full right-0 mt-2 w-48 rounded-md shadow-lg bg-background/95 backdrop-blur-md border border-border md:hidden"
+          className="absolute top-full right-0 mt-2 w-52 rounded-2xl shadow-xl bg-background/95 backdrop-blur-lg border border-border/80 md:hidden z-40"
           initial="hidden"
           animate="visible"
-          exit="hidden"
+          exit="exit"
           variants={menuVariants}
         >
           <div className="px-2 py-2">
@@ -61,15 +64,16 @@ const MobileMenu = ({
                 <motion.div variants={itemVariants}>
                   <Link
                     to="/"
-                    className="block px-4 py-2 text-sm text-foreground hover:bg-accent/20 rounded-md"
+                    className="block px-4 py-2 text-sm text-foreground hover:bg-accent/10 rounded-lg transition-colors"
                     onClick={onClose}
                   >
                     Home
                   </Link>
                 </motion.div>
+
                 <motion.div variants={itemVariants} className="mt-2">
                   <button
-                    className="w-full text-left px-4 py-2 text-sm bg-accent text-accent-foreground hover:bg-accent/90 rounded-md"
+                    className="w-full text-left px-4 py-2 text-sm bg-accent text-accent-foreground hover:bg-accent/90 rounded-lg transition-colors"
                     onClick={() => {
                       onHireMeClick();
                       onClose();
@@ -82,31 +86,34 @@ const MobileMenu = ({
             ) : (
               <>
                 <motion.button
-                  className="w-full text-left block px-4 py-2 text-sm text-foreground hover:bg-accent/20 rounded-md"
+                  className="w-full text-left block px-4 py-2 text-sm text-foreground hover:bg-accent/10 rounded-lg transition-colors"
                   onClick={() => handleScroll('projects')}
                   variants={itemVariants}
                 >
                   Projects
                 </motion.button>
+
                 <motion.button
-                  className="w-full text-left block px-4 py-2 text-sm text-foreground hover:bg-accent/20 rounded-md"
+                  className="w-full text-left block px-4 py-2 text-sm text-foreground hover:bg-accent/10 rounded-lg transition-colors"
                   onClick={() => handleScroll('achievements')}
                   variants={itemVariants}
                 >
                   Tech Stack
                 </motion.button>
+
                 <motion.div variants={itemVariants}>
                   <Link
                     to="/blog"
-                    className="block px-4 py-2 text-sm text-foreground hover:bg-accent/20 rounded-md"
+                    className="block px-4 py-2 text-sm text-foreground hover:bg-accent/10 rounded-lg transition-colors"
                     onClick={onClose}
                   >
                     Blog
                   </Link>
                 </motion.div>
+
                 <motion.div variants={itemVariants} className="mt-2">
                   <button
-                    className="w-full text-left px-4 py-2 text-sm bg-accent text-accent-foreground hover:bg-accent/90 rounded-md"
+                    className="w-full text-left px-4 py-2 text-sm bg-accent text-accent-foreground hover:bg-accent/90 rounded-lg transition-colors"
                     onClick={() => {
                       onHireMeClick();
                       onClose();

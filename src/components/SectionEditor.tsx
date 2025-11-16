@@ -227,9 +227,11 @@ const SectionEditor: React.FC<SectionEditorProps> = ({
                 <Label htmlFor="name">Name</Label>
                 <Input
                   id="name"
+                  name="name"
                   value={currentSection.name}
                   onChange={handleChange}
                   required
+                  autoComplete="off"
                   className="mt-1"
                 />
                 <p className="text-sm text-muted-foreground mt-1">
@@ -240,9 +242,11 @@ const SectionEditor: React.FC<SectionEditorProps> = ({
                 <Label htmlFor="page">Page</Label>
                 <Input
                   id="page"
+                  name="page"
                   value={currentSection.page}
                   onChange={handleChange}
                   required
+                  autoComplete="off"
                   className="mt-1"
                 />
                 <p className="text-sm text-muted-foreground mt-1">
@@ -253,8 +257,10 @@ const SectionEditor: React.FC<SectionEditorProps> = ({
                 <Label htmlFor="title">Title</Label>
                 <Input
                   id="title"
+                  name="title"
                   value={currentSection.title || ''}
                   onChange={handleChange}
+                  autoComplete="off"
                   className="mt-1"
                 />
                 <p className="text-sm text-muted-foreground mt-1">
@@ -265,8 +271,10 @@ const SectionEditor: React.FC<SectionEditorProps> = ({
                 <Label htmlFor="subtitle">Subtitle</Label>
                 <Input
                   id="subtitle"
+                  name="subtitle"
                   value={currentSection.subtitle || ''}
                   onChange={handleChange}
+                  autoComplete="off"
                   className="mt-1"
                 />
                 <p className="text-sm text-muted-foreground mt-1">
@@ -277,8 +285,10 @@ const SectionEditor: React.FC<SectionEditorProps> = ({
                 <Label htmlFor="content">Content</Label>
                 <Textarea
                   id="content"
+                  name="content"
                   value={currentSection.content || ''}
                   onChange={handleChange}
+                  autoComplete="off"
                   className="mt-1"
                 />
                 <p className="text-sm text-muted-foreground mt-1">
@@ -289,9 +299,11 @@ const SectionEditor: React.FC<SectionEditorProps> = ({
                 <Label htmlFor="order">Order</Label>
                 <Input
                   id="order"
+                  name="order"
                   type="number"
                   value={currentSection.order || 0}
                   onChange={handleChange}
+                  autoComplete="off"
                   className="mt-1"
                 />
                 <p className="text-sm text-muted-foreground mt-1">
@@ -301,6 +313,7 @@ const SectionEditor: React.FC<SectionEditorProps> = ({
               <div className="flex items-center space-x-2">
                 <Switch
                   id="isPublished"
+                  name="isPublished"
                   checked={currentSection.isPublished}
                   onCheckedChange={handleSwitchChange}
                 />
@@ -335,10 +348,12 @@ const SectionEditor: React.FC<SectionEditorProps> = ({
                     <Label htmlFor={`image-url-${index}`}>URL</Label>
                     <Input
                       id={`image-url-${index}`}
+                      name={`image-url-${index}`}
                       value={image.url}
                       onChange={(e) =>
                         handleImageChange(index, 'url', e.target.value)
                       }
+                      autoComplete="off"
                       className="mt-1"
                     />
                   </div>
@@ -346,10 +361,12 @@ const SectionEditor: React.FC<SectionEditorProps> = ({
                     <Label htmlFor={`image-alt-${index}`}>Alt Text</Label>
                     <Input
                       id={`image-alt-${index}`}
+                      name={`image-alt-${index}`}
                       value={image.alt || ''}
                       onChange={(e) =>
                         handleImageChange(index, 'alt', e.target.value)
                       }
+                      autoComplete="off"
                       className="mt-1"
                     />
                   </div>
@@ -384,10 +401,12 @@ const SectionEditor: React.FC<SectionEditorProps> = ({
                     <Label htmlFor={`video-url-${index}`}>URL</Label>
                     <Input
                       id={`video-url-${index}`}
+                      name={`video-url-${index}`}
                       value={video.url}
                       onChange={(e) =>
                         handleVideoChange(index, 'url', e.target.value)
                       }
+                      autoComplete="off"
                       className="mt-1"
                     />
                   </div>
@@ -395,10 +414,12 @@ const SectionEditor: React.FC<SectionEditorProps> = ({
                     <Label htmlFor={`video-alt-${index}`}>Alt Text</Label>
                     <Input
                       id={`video-alt-${index}`}
+                      name={`video-alt-${index}`}
                       value={video.alt || ''}
                       onChange={(e) =>
                         handleVideoChange(index, 'alt', e.target.value)
                       }
+                      autoComplete="off"
                       className="mt-1"
                     />
                   </div>
@@ -433,10 +454,12 @@ const SectionEditor: React.FC<SectionEditorProps> = ({
                     <Label htmlFor={`link-text-${index}`}>Text</Label>
                     <Input
                       id={`link-text-${index}`}
+                      name={`link-text-${index}`}
                       value={link.text}
                       onChange={(e) =>
                         handleLinkChange(index, 'text', e.target.value)
                       }
+                      autoComplete="off"
                       className="mt-1"
                     />
                   </div>
@@ -444,10 +467,12 @@ const SectionEditor: React.FC<SectionEditorProps> = ({
                     <Label htmlFor={`link-url-${index}`}>URL</Label>
                     <Input
                       id={`link-url-${index}`}
+                      name={`link-url-${index}`}
                       value={link.url}
                       onChange={(e) =>
                         handleLinkChange(index, 'url', e.target.value)
                       }
+                      autoComplete="off"
                       className="mt-1"
                     />
                   </div>
@@ -476,6 +501,7 @@ const SectionEditor: React.FC<SectionEditorProps> = ({
                       <Label htmlFor={`metadata-key-${index}`}>Key</Label>
                       <Input
                         id={`metadata-key-${index}`}
+                        name={`metadata-key-${index}`}
                         value={key}
                         onChange={(e) => {
                           const newMetadata = { ...currentSection.metadata };
@@ -487,6 +513,7 @@ const SectionEditor: React.FC<SectionEditorProps> = ({
                             metadata: newMetadata,
                           }));
                         }}
+                        autoComplete="off"
                         className="mt-1"
                       />
                     </div>
@@ -494,10 +521,12 @@ const SectionEditor: React.FC<SectionEditorProps> = ({
                       <Label htmlFor={`metadata-value-${index}`}>Value</Label>
                       <Textarea
                         id={`metadata-value-${index}`}
+                        name={`metadata-value-${index}`}
                         value={typeof value === 'string' ? value : JSON.stringify(value, null, 2)}
                         onChange={(e) =>
                           handleMetadataChange(key, e.target.value)
                         }
+                        autoComplete="off"
                         className="mt-1"
                       />
                     </div>

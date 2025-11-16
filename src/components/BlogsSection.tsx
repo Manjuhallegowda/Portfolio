@@ -1,7 +1,13 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useInView } from 'react-intersection-observer';
@@ -11,7 +17,7 @@ import { Blog } from '@/interfaces/Blog';
 
 interface SectionContent {
   title?: string;
-  content?: string; // For the introductory paragraph
+  content?: string;
 }
 
 const BlogsSection = () => {
@@ -21,7 +27,7 @@ const BlogsSection = () => {
   );
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
-  const [limit] = useState(6); // Number of blogs to load per request
+  const [limit] = useState(6);
   const [hasMore, setHasMore] = useState(true);
   const { isLoading, showLoading, hideLoading } = useLoading();
 
@@ -41,7 +47,7 @@ const BlogsSection = () => {
         if (!sectionResponse.ok) {
           throw new Error(`HTTP error! status: ${sectionResponse.status}`);
         }
-        const sectionData = await sectionResponse.json();
+        const sectionData = (await sectionResponse.json()) as SectionContent;
         setSectionContent(sectionData);
 
         // Fetch blogs
@@ -52,24 +58,29 @@ const BlogsSection = () => {
           throw new Error(`HTTP error! status: ${blogsResponse.status}`);
         }
         const blogsData = await blogsResponse.json();
-        if (blogsData.success) {
-          console.log('Fetched blogs:', blogsData.data);
-          const transformedBlogs = blogsData.data.map((blog: any) => ({
-            ...blog,
-            createdAt: blog.created_at,
-            read_time: blog.read_time,
-          }));
-          setBlogs((prevBlogs) => [...prevBlogs, ...transformedBlogs]);
-          setHasMore(blogsData.pagination.page * blogsData.pagination.limit < blogsData.pagination.total);
+
+        if (blogsData.success && Array.isArray(blogsData.data)) {
+          // Assume backend already returns the shape matching Blog
+          const fetchedBlogs = blogsData.data as Blog[];
+
+          setBlogs((prevBlogs) => [...prevBlogs, ...fetchedBlogs]);
+
+          setHasMore(
+            blogsData.pagination.page * blogsData.pagination.limit <
+              blogsData.pagination.total
+          );
         }
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : 'Failed to load blogs section.';
+        setError(message);
       } finally {
         hideLoading();
       }
     };
 
     fetchBlogsAndSection();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, limit]);
 
   const loadMoreBlogs = () => {
@@ -77,28 +88,30 @@ const BlogsSection = () => {
   };
 
   const containerVariants = {
-    hidden: { opacity: 0 },
+    hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,
+      y: 0,
       transition: {
-        staggerChildren: 0.2,
+        staggerChildren: 0.18,
       },
     },
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 50 },
+    hidden: { opacity: 0, y: 32 },
     visible: {
       opacity: 1,
       y: 0,
       transition: {
-        duration: 0.6,
+        duration: 0.5,
       },
     },
   };
 
   if (isLoading && blogs.length === 0) {
-    return null; // The global spinner will be shown
+    // Let your global loader handle the first load
+    return null;
   }
 
   if (error) {
@@ -109,69 +122,113 @@ const BlogsSection = () => {
     );
   }
 
+  const titleParts = sectionContent?.title?.split(' ') || [];
+  const firstWord = titleParts[0] || 'Latest';
+  const restWords =
+    titleParts.length > 1 ? titleParts.slice(1).join(' ') : 'Blogs';
+
   return (
-    <section className="py-20 relative" ref={ref}>
-      <div className="container mx-auto px-6">
+    <section
+      className="py-20 relative overflow-hidden bg-gradient-to-b from-background via-background/95 to-background"
+      ref={ref}
+    >
+      {/* Subtle luxury background accents */}
+      <div className="pointer-events-none absolute -top-24 right-0 h-64 w-64 rounded-full bg-accent/10 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-[-4rem] left-6 h-72 w-72 rounded-full bg-amber-500/10 blur-3xl" />
+      <div className="pointer-events-none absolute inset-0 opacity-[0.05]">
+        <div className="h-full w-full bg-[linear-gradient(to_right,rgba(148,163,184,0.35)_1px,transparent_1px),linear-gradient(to_bottom,rgba(148,163,184,0.35)_1px,transparent_1px)] bg-[size:80px_80px]" />
+      </div>
+
+      <div className="container mx-auto px-6 relative z-10">
+        {/* Header */}
         <motion.div
           className="text-center mb-16"
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 25 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.5 }}
         >
-          <h2 className="text-5xl font-bold mb-6">
-            {sectionContent?.title?.split(' ')[0] || 'Latest'}{' '}
-            <span className="text-accent">
-              {sectionContent?.title?.split(' ').slice(1).join(' ') || 'Blogs'}
+          <div className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-background/70 px-4 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-3">
+            <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+            Writing & Insights
+          </div>
+
+          <h2 className="text-4xl md:text-5xl font-bold mb-3 tracking-tight">
+            {firstWord}{' '}
+            <span className="bg-gradient-to-r from-accent via-amber-400 to-accent bg-clip-text text-transparent">
+              {restWords}
             </span>
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+
+          <div className="mx-auto h-[2px] w-24 rounded-full bg-gradient-to-r from-accent via-amber-400 to-transparent mb-4" />
+
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             {sectionContent?.content ||
-              'Insights, tutorials, and thoughts on web development, technology, and software engineering.'}
+              'Insights, tutorials, and reflections on building, scaling, and shipping software that actually ships.'}
           </p>
         </motion.div>
 
+        {/* Blog cards */}
         <motion.div
           className="grid gap-8 md:grid-cols-2 lg:grid-cols-3"
           variants={containerVariants}
           initial="hidden"
           animate={inView ? 'visible' : 'hidden'}
         >
-          {blogs.map((blog, index) => (
+          {blogs.map((blog) => (
             <motion.div
               key={blog.id}
               variants={itemVariants}
-              whileHover={{ y: -5 }}
               className="h-full"
+              whileHover={{ y: -6 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 20 }}
             >
               <Link to={`/blog/${blog.slug}`}>
-                <Card className="h-full hover:shadow-lg transition-shadow duration-300 border-border/50 hover:border-accent/30">
+                <Card className="group h-full overflow-hidden rounded-2xl border border-border/80 bg-card/90 backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.6)] hover:border-accent/70 transition-colors duration-300">
+                  {/* Image */}
                   {blog.featured_image_url && (
-                    <img
-                      src={blog.featured_image_url}
-                      alt={blog.title}
-                      className="w-full h-48 object-cover"
-                    />
+                    <div className="relative overflow-hidden">
+                      <img
+                        src={blog.featured_image_url}
+                        alt={blog.title}
+                        className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent opacity-70 group-hover:opacity-80 transition-opacity" />
+                      <div className="absolute bottom-3 left-3 flex gap-2">
+                        <Badge
+                          variant="secondary"
+                          className="text-[0.7rem] bg-black/70 text-slate-100 border border-white/10"
+                        >
+                          {blog.read_time} min read
+                        </Badge>
+                      </div>
+                    </div>
                   )}
-                  <CardHeader>
-                    <div className="flex items-center justify-between mb-2">
-                      <Badge variant="secondary" className="text-xs">
-                        {blog.read_time} min read
-                      </Badge>
-                      <span className="text-sm text-muted-foreground">
+
+                  <CardHeader className="space-y-3">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span className="uppercase tracking-[0.16em] text-[0.68rem] text-accent">
+                        Article
+                      </span>
+                      <span>
                         {new Date(blog.created_at).toLocaleDateString()}
                       </span>
                     </div>
-                    <CardTitle className="text-xl hover:text-accent transition-colors cursor-pointer">
+                    <CardTitle className="text-lg md:text-xl leading-snug group-hover:text-accent transition-colors">
                       {blog.title}
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <CardDescription className="mb-4">
+
+                  <CardContent className="pb-5">
+                    <CardDescription className="mb-4 text-sm text-muted-foreground line-clamp-3">
                       {blog.excerpt}
                     </CardDescription>
                     <div className="flex flex-wrap gap-2">
                       {blog.tags.map((tag) => (
-                        <Badge key={tag} variant="outline" className="text-xs">
+                        <Badge
+                          key={tag}
+                          variant="outline"
+                          className="text-[0.7rem] border-border/70 text-muted-foreground group-hover:border-accent/60 group-hover:text-accent transition-colors"
+                        >
                           {tag}
                         </Badge>
                       ))}
@@ -183,22 +240,23 @@ const BlogsSection = () => {
           ))}
         </motion.div>
 
+        {/* Load more */}
         {hasMore && (
           <motion.div
             className="text-center mt-16"
             initial={{ opacity: 0, y: 20 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.8 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
               <Button
                 size="lg"
                 variant="outline"
-                className="border-accent text-accent hover:bg-accent hover:text-accent-foreground glow-on-hover"
+                className="border-accent/70 text-accent hover:bg-accent hover:text-accent-foreground px-8 rounded-full"
                 onClick={loadMoreBlogs}
                 disabled={isLoading}
               >
-                {isLoading ? 'Loading...' : 'Load More Blogs'}
+                {isLoading ? 'Loading…' : 'Load More Blogs'}
               </Button>
             </motion.div>
           </motion.div>

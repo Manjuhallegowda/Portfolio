@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 
 interface Contact {
-  _id: string;
+  id: string;
   name: string;
   email: string;
   subject: string;
@@ -20,7 +20,8 @@ interface Contact {
   is_replied: boolean;
   reply_message: string;
   replied_at: string;
-  created_at: string;
+  createdAt: string;
+  updatedAt?: string;
 }
 
 interface ContactEditorProps {
@@ -79,10 +80,12 @@ const ContactEditor = ({
             <Label htmlFor="reply_message">Reply Message</Label>
             <Textarea
               id="reply_message"
+              name="reply_message"
               value={replyMessage}
               onChange={(e) => setReplyMessage(e.target.value)}
               rows={5}
               required
+              autoComplete="off"
             />
           </div>
           <Button type="submit">Send Reply</Button>

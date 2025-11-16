@@ -96,31 +96,37 @@ const AchievementEditor = ({ open, onOpenChange, achievement, onSave }: Achievem
             <Label htmlFor="title">Title</Label>
             <Input
               id="title"
+              name="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
+              autoComplete="off"
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
             <Textarea
               id="description"
+              name="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               required
+              autoComplete="off"
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="items">Items (comma-separated)</Label>
             <Input
               id="items"
+              name="items"
               value={items}
               onChange={(e) => setItems(e.target.value)}
+              autoComplete="off"
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="icon">Icon</Label>
-            <Select value={icon} onValueChange={setIcon}>
+            <Select value={icon} onValueChange={setIcon} name="icon" autoComplete="off">
               <SelectTrigger id="icon">
                 <SelectValue placeholder="Select an icon" />
               </SelectTrigger>
@@ -143,19 +149,23 @@ const AchievementEditor = ({ open, onOpenChange, achievement, onSave }: Achievem
             <Label htmlFor="category">Category</Label>
             <Input
               id="category"
+              name="category"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               required
+              autoComplete="off"
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="order">Order</Label>
             <Input
               id="order"
+              name="order"
               type="number"
               value={order}
               onChange={(e) => setOrder(Number(e.target.value))}
               required
+              autoComplete="off"
             />
           </div>
           <Button type="submit">Save</Button>

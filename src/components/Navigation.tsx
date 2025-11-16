@@ -6,12 +6,21 @@ import logo from '../assets/logo.png';
 import MobileMenu from './MobileMenu';
 import { Menu, X } from 'lucide-react';
 
+type NavItem = {
+  id: string;
+  label: string;
+  isRoute?: boolean; // optional so TypeScript doesn't complain
+};
+
 interface NavigationProps {
   onHireMeClick: () => void;
   isAdminPage?: boolean;
 }
 
-const Navigation = ({ onHireMeClick, isAdminPage = false }: NavigationProps) => {
+const Navigation = ({
+  onHireMeClick,
+  isAdminPage = false,
+}: NavigationProps) => {
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -31,10 +40,13 @@ const Navigation = ({ onHireMeClick, isAdminPage = false }: NavigationProps) => 
         }
         return false;
       });
+
       setActiveSection(current || '');
     };
 
     window.addEventListener('scroll', handleScroll);
+    handleScroll(); // run on mount so state is correct at top
+
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -44,6 +56,12 @@ const Navigation = ({ onHireMeClick, isAdminPage = false }: NavigationProps) => 
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
+
+  const navItems: NavItem[] = [
+    { id: 'projects', label: 'Projects' },
+    { id: 'achievements', label: 'Tech Stack' },
+    { id: '/blog', label: 'Blog', isRoute: true },
+  ];
 
   return (
     <div className="fixed top-4 left-0 right-0 z-50 flex justify-center">
@@ -97,258 +115,216 @@ const Navigation = ({ onHireMeClick, isAdminPage = false }: NavigationProps) => 
               </div>
             </motion.div>
 
-                                                {isAdminPage ? (
+            {/* Right side: links / buttons */}
+            {isAdminPage ? (
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Link
+                  to="/"
+                  className={`relative text-sm uppercase tracking-wide transition-colors ${
+                    location.pathname === '/'
+                      ? 'text-accent'
+                      : 'hover:text-accent'
+                  }`}
+                >
+                  Home
+                  <AnimatePresence>
+                    {location.pathname === '/' && (
+                      <motion.div
+                        className="absolute -bottom-1 left-0 right-0 h-0.5 bg-accent"
+                        layoutId="activeSection"
+                        initial={{ scaleX: 0 }}
+                        animate={{ scaleX: 1 }}
+                        exit={{ scaleX: 0 }}
+                        transition={{
+                          type: 'spring',
+                          stiffness: 380,
+                          damping: 30,
+                        }}
+                      />
+                    )}
+                  </AnimatePresence>
+                </Link>
+              </motion.div>
+            ) : (
+              <>
+                {/* Desktop nav */}
+                <div className="hidden md:flex items-center gap-8">
+                  {location.pathname.startsWith('/blog') ? (
+                    <>
+                      {/* On blog pages: show Home + Connect */}
+                      <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <Link
+                          to="/"
+                          className={`relative text-sm uppercase tracking-wide transition-colors ${
+                            location.pathname === '/'
+                              ? 'text-accent'
+                              : 'hover:text-accent'
+                          }`}
+                        >
+                          Home
+                        </Link>
+                      </motion.div>
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.3, delay: 0.1 }}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <Button
+                          size="sm"
+                          className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold glow-on-hover"
+                          onClick={onHireMeClick}
+                        >
+                          Connect
+                        </Button>
+                      </motion.div>
+                    </>
+                  ) : (
+                    <>
+                      {navItems.map((item, index) =>
+                        item.isRoute ? (
+                          // Route item: /blog
+                          <motion.div
+                            key={item.id}
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3, delay: 0.1 * index }}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            <Link
+                              to={item.id}
+                              className={`relative text-sm uppercase tracking-wide transition-colors ${
+                                location.pathname === item.id
+                                  ? 'text-accent'
+                                  : 'hover:text-accent'
+                              }`}
+                            >
+                              {item.label}
+                              <AnimatePresence>
+                                {location.pathname === item.id && (
+                                  <motion.div
+                                    className="absolute -bottom-1 left-0 right-0 h-0.5 bg-accent"
+                                    layoutId="activeSection"
+                                    initial={{ scaleX: 0 }}
+                                    animate={{ scaleX: 1 }}
+                                    exit={{ scaleX: 0 }}
+                                    transition={{
+                                      type: 'spring',
+                                      stiffness: 380,
+                                      damping: 30,
+                                    }}
+                                  />
+                                )}
+                              </AnimatePresence>
+                            </Link>
+                          </motion.div>
+                        ) : location.pathname === '/' ? (
+                          // On home route: smooth scroll to sections
+                          <motion.a
+                            key={item.id}
+                            href={`#${item.id}`}
+                            className={`relative text-sm uppercase tracking-wide transition-colors ${
+                              activeSection === item.id
+                                ? 'text-accent'
+                                : 'hover:text-accent'
+                            }`}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              scrollToSection(item.id);
+                            }}
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3, delay: 0.1 * index }}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            {item.label}
+                            <AnimatePresence>
+                              {activeSection === item.id && (
+                                <motion.div
+                                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-accent"
+                                  layoutId="activeSection"
+                                  initial={{ scaleX: 0 }}
+                                  animate={{ scaleX: 1 }}
+                                  exit={{ scaleX: 0 }}
+                                  transition={{
+                                    type: 'spring',
+                                    stiffness: 380,
+                                    damping: 30,
+                                  }}
+                                />
+                              )}
+                            </AnimatePresence>
+                          </motion.a>
+                        ) : (
+                          // On other routes: go home and then scroll to section
+                          <motion.div
+                            key={item.id}
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3, delay: 0.1 * index }}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            <Link
+                              to="/"
+                              state={{ scrollTo: item.id }}
+                              className="relative text-sm uppercase tracking-wide transition-colors hover:text-accent"
+                            >
+                              {item.label}
+                            </Link>
+                          </motion.div>
+                        )
+                      )}
 
-                                                  <motion.div
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.3, delay: 0.4 }}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <Button
+                          size="sm"
+                          className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold glow-on-hover"
+                          onClick={onHireMeClick}
+                        >
+                          Connect
+                        </Button>
+                      </motion.div>
+                    </>
+                  )}
+                </div>
 
-                                                    initial={{ opacity: 0, y: -20 }}
-
-                                                    animate={{ opacity: 1, y: 0 }}
-
-                                                    transition={{ duration: 0.3 }}
-
-                                                    whileHover={{ scale: 1.1 }}
-
-                                                    whileTap={{ scale: 0.95 }}
-
-                                                  >
-
-                                                    <Link
-
-                                                      to="/"
-
-                                                      className={`relative text-sm uppercase tracking-wide transition-colors ${
-
-                                                        location.pathname === '/'
-
-                                                          ? 'text-accent'
-
-                                                          : 'hover:text-accent'
-
-                                                      }`}
-
-                                                    >
-
-                                                      Home
-
-                                                      <AnimatePresence>
-
-                                                        {location.pathname === '/' && (
-
-                                                          <motion.div
-
-                                                            className="absolute -bottom-1 left-0 right-0 h-0.5 bg-accent"
-
-                                                            layoutId="activeSection"
-
-                                                            initial={{ scaleX: 0 }}
-
-                                                            animate={{ scaleX: 1 }}
-
-                                                            exit={{ scaleX: 0 }}
-
-                                                            transition={{
-
-                                                              type: 'spring',
-
-                                                              stiffness: 380,
-
-                                                              damping: 30,
-
-                                                            }}
-
-                                                          />
-
-                                                        )}
-
-                                                      </AnimatePresence>
-
-                                                    </Link>
-
-                                                  </motion.div>
-
-                                                ) : (
-
-                                                  <>
-
-                                                                    <div className="hidden md:flex items-center gap-8">
-                                                                      {location.pathname.startsWith('/blog') ? (
-                                                                        <>
-                                                                          <motion.div
-                                                                            initial={{ opacity: 0, y: -20 }}
-                                                                            animate={{ opacity: 1, y: 0 }}
-                                                                            transition={{ duration: 0.3 }}
-                                                                            whileHover={{ scale: 1.1 }}
-                                                                            whileTap={{ scale: 0.95 }}
-                                                                          >
-                                                                            <Link
-                                                                              to="/"
-                                                                              className={`relative text-sm uppercase tracking-wide transition-colors ${
-                                                                                location.pathname === '/'
-                                                                                  ? 'text-accent'
-                                                                                  : 'hover:text-accent'
-                                                                              }`}
-                                                                            >
-                                                                              Home
-                                                                            </Link>
-                                                                          </motion.div>
-                                                                          <motion.div
-                                                                            initial={{ opacity: 0, scale: 0.8 }}
-                                                                            animate={{ opacity: 1, scale: 1 }}
-                                                                            transition={{ duration: 0.3, delay: 0.1 }}
-                                                                            whileHover={{ scale: 1.05 }}
-                                                                            whileTap={{ scale: 0.95 }}
-                                                                          >
-                                                                            <Button
-                                                                              size="sm"
-                                                                              className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold glow-on-hover"
-                                                                              onClick={onHireMeClick}
-                                                                            >
-                                                                              Connect
-                                                                            </Button>
-                                                                          </motion.div>
-                                                                        </>
-                                                                      ) : (
-                                                                        <>
-                                                                          {[
-                                                                            { id: 'projects', label: 'Projects' },
-                                                                            { id: 'achievements', label: 'Tech Stack' },
-                                                                            { id: '/blog', label: 'Blog', isRoute: true },
-                                                                          ].map((item, index) =>
-                                                                            item.isRoute ? (
-                                                                              <motion.div
-                                                                                key={item.id}
-                                                                                initial={{ opacity: 0, y: -20 }}
-                                                                                animate={{ opacity: 1, y: 0 }}
-                                                                                transition={{ duration: 0.3, delay: 0.1 * index }}
-                                                                                whileHover={{ scale: 1.1 }}
-                                                                                whileTap={{ scale: 0.95 }}
-                                                                              >
-                                                                                <Link
-                                                                                  to={item.id}
-                                                                                  className={`relative text-sm uppercase tracking-wide transition-colors ${
-                                                                                    location.pathname === item.id
-                                                                                      ? 'text-accent'
-                                                                                      : 'hover:text-accent'
-                                                                                  }`}
-                                                                                >
-                                                                                  {item.label}
-                                                                                  <AnimatePresence>
-                                                                                    {location.pathname === item.id && (
-                                                                                      <motion.div
-                                                                                        className="absolute -bottom-1 left-0 right-0 h-0.5 bg-accent"
-                                                                                        layoutId="activeSection"
-                                                                                        initial={{ scaleX: 0 }}
-                                                                                        animate={{ scaleX: 1 }}
-                                                                                        exit={{ scaleX: 0 }}
-                                                                                        transition={{
-                                                                                          type: 'spring',
-                                                                                          stiffness: 380,
-                                                                                          damping: 30,
-                                                                                        }}
-                                                                                      />
-                                                                                    )}
-                                                                                  </AnimatePresence>
-                                                                                </Link>
-                                                                              </motion.div>
-                                                                            ) : location.pathname === '/' ? (
-                                                                              <motion.a
-                                                                                key={item.id}
-                                                                                href={`#${item.id}`}
-                                                                                className={`relative text-sm uppercase tracking-wide transition-colors ${
-                                                                                  activeSection === item.id
-                                                                                    ? 'text-accent'
-                                                                                    : 'hover:text-accent'
-                                                                                }`}
-                                                                                onClick={(e) => {
-                                                                                  e.preventDefault();
-                                                                                  scrollToSection(item.id);
-                                                                                }}
-                                                                                initial={{ opacity: 0, y: -20 }}
-                                                                                animate={{ opacity: 1, y: 0 }}
-                                                                                transition={{ duration: 0.3, delay: 0.1 * index }}
-                                                                                whileHover={{ scale: 1.1 }}
-                                                                                whileTap={{ scale: 0.95 }}
-                                                                              >
-                                                                                {item.label}
-                                                                                <AnimatePresence>
-                                                                                  {activeSection === item.id && (
-                                                                                    <motion.div
-                                                                                      className="absolute -bottom-1 left-0 right-0 h-0.5 bg-accent"
-                                                                                      layoutId="activeSection"
-                                                                                      initial={{ scaleX: 0 }}
-                                                                                      animate={{ scaleX: 1 }}
-                                                                                      exit={{ scaleX: 0 }}
-                                                                                      transition={{
-                                                                                        type: 'spring',
-                                                                                        stiffness: 380,
-                                                                                        damping: 30,
-                                                                                      }}
-                                                                                    />
-                                                                                  )}
-                                                                                </AnimatePresence>
-                                                                              </motion.a>
-                                                                            ) : (
-                                                                              <motion.div
-                                                                                key={item.id}
-                                                                                initial={{ opacity: 0, y: -20 }}
-                                                                                animate={{ opacity: 1, y: 0 }}
-                                                                                transition={{ duration: 0.3, delay: 0.1 * index }}
-                                                                                whileHover={{ scale: 1.1 }}
-                                                                                whileTap={{ scale: 0.95 }}
-                                                                              >
-                                                                                <Link
-                                                                                  to={`/`}
-                                                                                  state={{ scrollTo: item.id }}
-                                                                                  className={`relative text-sm uppercase tracking-wide transition-colors hover:text-accent`}
-                                                                                >
-                                                                                  {item.label}
-                                                                                </Link>
-                                                                              </motion.div>
-                                                                            )
-                                                                          )}
-                                                        
-                                                                          <motion.div
-                                                                            initial={{ opacity: 0, scale: 0.8 }}
-                                                                            animate={{ opacity: 1, scale: 1 }}
-                                                                            transition={{ duration: 0.3, delay: 0.4 }}
-                                                                            whileHover={{ scale: 1.05 }}
-                                                                            whileTap={{ scale: 0.95 }}
-                                                                          >
-                                                                            <Button
-                                                                              size="sm"
-                                                                              className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold glow-on-hover"
-                                                                              onClick={onHireMeClick}
-                                                                            >
-                                                                              Connect
-                                                                            </Button>
-                                                                          </motion.div>
-                                                                        </>
-                                                                      )}
-                                                                    </div>
-
-                                                                    <div className="md:hidden">
-
-                                                                      <Button
-
-                                                                        variant="ghost"
-
-                                                                        size="icon"
-
-                                                                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-
-                                                                      >
-
-                                                                        {isMobileMenuOpen ? <X /> : <Menu />}
-
-                                                                      </Button>
-
-                                                                    </div>
-
-                                                  </>
-
-                                                )}
+                {/* Mobile nav toggle */}
+                <div className="md:hidden">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+                  >
+                    {isMobileMenuOpen ? <X /> : <Menu />}
+                  </Button>
+                </div>
+              </>
+            )}
           </div>
+
+          {/* Mobile menu */}
           <MobileMenu
             isOpen={isMobileMenuOpen}
             onClose={() => setIsMobileMenuOpen(false)}

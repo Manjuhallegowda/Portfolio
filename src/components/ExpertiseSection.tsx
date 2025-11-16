@@ -1,15 +1,21 @@
-import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
+import { motion, type Variants } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { useLoading } from '@/hooks/useLoading';
-import { Globe, Smartphone, TrendingUp, Code, LucideIcon } from 'lucide-react';
+import {
+  Globe,
+  Smartphone,
+  TrendingUp,
+  Code,
+  type LucideIcon,
+} from 'lucide-react';
 
 // Map string icon names to LucideIcon components
 const iconMap: { [key: string]: LucideIcon } = {
-  Globe: Globe,
-  Smartphone: Smartphone,
-  TrendingUp: TrendingUp,
-  Code: Code,
+  Globe,
+  Smartphone,
+  TrendingUp,
+  Code,
   // Add other icons as needed
 };
 
@@ -27,9 +33,36 @@ interface SectionContent {
   };
 }
 
-const ExpertiseSection = () => {
+const containerVariants: Variants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.6,
+      when: 'beforeChildren',
+      staggerChildren: 0.15,
+      ease: [0.16, 1, 0.3, 1],
+    },
+  },
+};
+
+const cardVariants: Variants = {
+  hidden: { opacity: 0, y: 40, scale: 0.96 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: 0.5,
+      ease: [0.16, 1, 0.3, 1],
+    },
+  },
+};
+
+const ExpertiseSection: React.FC = () => {
   const { ref, inView } = useInView({
-    threshold: 0.1,
+    threshold: 0.15,
     triggerOnce: true,
   });
 
@@ -47,39 +80,22 @@ const ExpertiseSection = () => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        const data = await response.json();
+        const data = (await response.json()) as SectionContent;
         setSectionData(data);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error
+            ? err.message
+            : 'Failed to load expertise section.';
+        setError(message);
       } finally {
         hideLoading();
       }
     };
 
     fetchExpertiseSection();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-      },
-    },
-  };
-
-  const cardVariants = {
-    hidden: { opacity: 0, y: 50, scale: 0.9 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      transition: {
-        duration: 0.6,
-      },
-    },
-  };
 
   if (error) {
     return (
@@ -90,129 +106,149 @@ const ExpertiseSection = () => {
   }
 
   if (!sectionData) {
-    return null; // Or a placeholder
+    return null; // You could render a skeleton loader here if you want
   }
 
-  const expertiseAreas = sectionData?.metadata?.expertiseAreas || [];
+  const expertiseAreas = sectionData.metadata?.expertiseAreas || [];
+
+  const renderTitle = () => {
+    if (!sectionData.title) {
+      return (
+        <>
+          Technical <span className="text-accent">Expertise</span>
+        </>
+      );
+    }
+
+    const words = sectionData.title.split(' ');
+    const lastWord = words.pop();
+    return (
+      <>
+        {words.join(' ')}
+        {words.length > 0 ? ' ' : ''}
+        <span className="text-accent">{lastWord}</span>
+      </>
+    );
+  };
 
   return (
-    <section className="py-20 relative overflow-hidden" ref={ref}>
-      {/* Diagonal Background */}
+    <section className="relative py-20 md:py-24 overflow-hidden" ref={ref}>
+      {/* Background angled band */}
       <motion.div
-        className="absolute inset-0 bg-secondary transform -skew-y-3 scale-110"
-        initial={{ opacity: 0 }}
-        animate={inView ? { opacity: 1 } : {}}
-        transition={{ duration: 1.5 }}
+        className="absolute inset-0 bg-secondary/60 -skew-y-3 origin-top"
+        initial={{ opacity: 0, y: 40 }}
+        animate={inView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
       />
 
-      <div className="container mx-auto px-6 relative z-10">
+      {/* Subtle grid + glow */}
+      <div className="pointer-events-none absolute inset-0 opacity-[0.12]">
+        <div className="h-full w-full bg-[radial-gradient(circle_at_top,_#ffffff25,_transparent_55%),_linear-gradient(90deg,_rgba(255,255,255,0.12)_1px,_transparent_1px),_linear-gradient(180deg,_rgba(255,255,255,0.12)_1px,_transparent_1px)] bg-[length:100%_100%,140px_140px,140px_140px]" />
+      </div>
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-background via-background/70 to-transparent" />
+
+      <div className="relative z-10 container mx-auto px-6">
+        {/* Header */}
         <motion.div
-          className="max-w-3xl mx-auto text-center mb-20"
+          className="max-w-3xl mx-auto text-center mb-16 md:mb-20"
           initial={{ opacity: 0, y: 30 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         >
-          <h2 className="text-5xl font-bold mb-6">
-            {sectionData?.title ? (
-              (() => {
-                const words = sectionData.title.split(' ');
-                const lastWord = words.pop();
-                return (
-                  <>
-                    {words.join(' ')}
-                    {words.length > 0 ? ' ' : ''}
-                    <span className="text-accent">{lastWord}</span>
-                  </>
-                );
-              })()
-            ) : (
-              <>
-                Technical <span className="text-accent">Expertise</span>
-              </>
-            )}
+          <div className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-4 py-1 text-[0.68rem] font-semibold tracking-[0.22em] uppercase text-accent mb-4">
+            <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+            Core Capabilities
+          </div>
+
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 tracking-tight">
+            {renderTitle()}
           </h2>
-          <p className="text-xl text-muted-foreground">
-            {sectionData?.content ||
-              'From ideation to deployment, I handle every aspect of building digital products that scale and perform.'}
+
+          <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
+            {sectionData.content ||
+              'From ideation to deployment, I handle every aspect of building digital products that scale, perform, and feel crafted rather than cobbled together.'}
           </p>
         </motion.div>
 
+        {/* Cards */}
         <motion.div
-          className="grid md:grid-cols-2 gap-8"
+          className="grid md:grid-cols-2 lg:grid-cols-3 gap-7 lg:gap-8"
           variants={containerVariants}
           initial="hidden"
           animate={inView ? 'visible' : 'hidden'}
         >
+          {expertiseAreas.length === 0 && (
+            <motion.div
+              variants={cardVariants}
+              className="md:col-span-2 lg:col-span-3 rounded-2xl border border-border/70 bg-card/80 backdrop-blur-md p-8 text-center"
+            >
+              <p className="text-muted-foreground">
+                Expertise areas will appear here once configured in your CMS.
+              </p>
+            </motion.div>
+          )}
+
           {expertiseAreas.map((area, index) => {
             const IconComponent = iconMap[area.iconName];
+
             return (
               <motion.div
-                key={area.title}
-                className="group relative bg-card p-8 border border-border hover:border-accent transition-all duration-300 hover-lift"
+                key={`${area.title}-${index}`}
+                className="group relative rounded-2xl border border-border/70 bg-card/80 backdrop-blur-xl p-7 shadow-[0_18px_45px_rgba(15,23,42,0.35)] hover:shadow-[0_22px_60px_rgba(15,23,42,0.55)] transition-shadow duration-300"
                 variants={cardVariants}
                 whileHover={{
-                  scale: 1.03,
-                  boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+                  y: -6,
+                  scale: 1.02,
                 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
               >
-                {/* Gold accent bar */}
-                <motion.div
-                  className="absolute top-0 left-0 w-1 h-0 bg-gradient-gold group-hover:h-full transition-all duration-500"
-                  initial={{ height: 0 }}
-                  whileHover={{ height: '100%' }}
-                  transition={{ duration: 0.3 }}
-                />
+                {/* Glow border */}
+                <div className="pointer-events-none absolute -inset-px rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="h-full w-full rounded-2xl bg-gradient-to-br from-accent/40 via-amber-400/25 to-transparent blur-2xl" />
+                </div>
 
-                <motion.div
-                  className="w-12 h-12 text-accent mb-6"
-                  whileHover={{
-                    scale: 1.2,
-                    rotate: 10,
-                  }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 10 }}
-                >
-                  {IconComponent && <IconComponent className="w-full h-full" />}
-                </motion.div>
+                {/* Gold accent strip */}
+                <div className="absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-accent/60 to-transparent opacity-60" />
 
-                <motion.h3
-                  className="text-2xl font-bold mb-4 group-hover:text-accent transition-colors"
-                  initial={{ opacity: 0 }}
-                  animate={inView ? { opacity: 1 } : {}}
-                  transition={{ duration: 0.4, delay: 0.2 + index * 0.1 }}
-                >
-                  {area.title}
-                </motion.h3>
+                <div className="relative">
+                  {/* Icon + label */}
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent/10 border border-accent/40 group-hover:bg-accent/15 transition-colors">
+                      {IconComponent && (
+                        <IconComponent className="h-5 w-5 text-accent" />
+                      )}
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[0.7rem] uppercase tracking-[0.18em] text-muted-foreground">
+                        Expertise Area
+                      </span>
+                      <h3 className="text-lg sm:text-xl font-semibold group-hover:text-accent transition-colors">
+                        {area.title}
+                      </h3>
+                    </div>
+                  </div>
 
-                <motion.p
-                  className="text-muted-foreground leading-relaxed"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={inView ? { opacity: 1, y: 0 } : {}}
-                  transition={{ duration: 0.4, delay: 0.4 + index * 0.1 }}
-                >
-                  {area.description}
-                </motion.p>
+                  {/* Description */}
+                  <p className="text-sm sm:text-[0.95rem] text-muted-foreground leading-relaxed mb-5">
+                    {area.description}
+                  </p>
+
+                  {/* Footer microcopy */}
+                  <div className="flex items-center justify-between text-[0.7rem] text-muted-foreground/80">
+                    <span className="inline-flex items-center gap-1">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                      <span>Battle-tested in real products</span>
+                    </span>
+                    <span className="font-mono opacity-80">
+                      #{String(index + 1).padStart(2, '0')}
+                    </span>
+                  </div>
+                </div>
 
                 {/* Corner accent */}
-                <motion.div
-                  className="absolute bottom-0 right-0 w-16 h-16 opacity-0 group-hover:opacity-100 transition-opacity"
-                  initial={{ opacity: 0 }}
-                  whileHover={{ opacity: 1 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <motion.div
-                    className="absolute bottom-0 right-0 w-full h-0.5 bg-accent"
-                    initial={{ width: 0 }}
-                    whileHover={{ width: '100%' }}
-                    transition={{ duration: 0.3 }}
-                  />
-                  <motion.div
-                    className="absolute bottom-0 right-0 w-0.5 h-full bg-accent"
-                    initial={{ height: 0 }}
-                    whileHover={{ height: '100%' }}
-                    transition={{ duration: 0.3 }}
-                  />
-                </motion.div>
+                <div className="pointer-events-none absolute bottom-0 right-0 h-16 w-16 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="absolute bottom-0 right-4 h-px w-10 bg-accent/80" />
+                  <div className="absolute bottom-4 right-0 h-10 w-px bg-accent/80" />
+                </div>
               </motion.div>
             );
           })}

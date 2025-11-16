@@ -1,9 +1,13 @@
-# TODO: Remove Lovable References Completely
+# TODO: Enhance ExpertiseSection
 
-- [x] Update `index.html` meta tags to portfolio-appropriate content
-- [x] Rewrite `README.md` for the portfolio project
-- [x] Remove "lovable-tagger" import and usage from `vite.config.ts`
-- [x] Remove "lovable-tagger" from `package.json` devDependencies and update description
-- [x] Replace `dist/favicon.ico` with a custom favicon
-- [x] Run `npm install` to update dependencies
-- [x] Test the build to ensure no errors
+- [x] Add 3D perspective to the container for depth
+- [x] Enhance card variants to include 3D rotations and transforms on hover (tilt based on mouse position)
+- [x] Replace diagonal background with dynamic animated gradient background that shifts colors
+- [x] Add glowing shadows and borders to cards for a modern effect
+- [x] Introduce floating animation for icons or subtle particle effects around cards
+- [x] Improve stagger animations with more varied directions (e.g., from different sides)
+- [x] Add parallax effect on scroll for the background
+- [x] Test the component in the browser for animations and responsiveness (Frontend running on localhost:8081)
+- [ ] Check for performance issues with 3D effects
+- [ ] Ensure API data renders correctly (Backend needs to be started)
+- [ ] Adjust for mobile devices if needed

@@ -189,17 +189,15 @@ router.post(
             slug,
             description,
             long_description: longDescription,
-            technologies: technologies ? technologies.split(',').map(t => t.trim()) : [],
+            technologies: technologies ? `{${technologies.split(',').map(t => `"${t.trim()}"`).join(',')}}` : null,
             category: category || 'web',
-            featured_image_url: featuredImagePublicId,
-
-            featured_image_alt: featuredImageAlt,
+            featured_image_url: featuredImageUrl,
             demo_url: demoUrl,
             source_url: sourceUrl,
             status: status || 'completed',
-            is_featured: isFeatured || false,
-            order: order || 0,
-            is_published: isPublished || false,
+            is_featured: isFeatured === 'true' || false,
+            order: order ? parseInt(order, 10) : 0,
+            is_published: isPublished === 'true' || false,
             author_id: req.user.id,
           },
         ])
@@ -289,20 +287,24 @@ router.put(
       }
       if (description) updatePayload.description = description;
       if (longDescription) updatePayload.long_description = longDescription;
-      if (technologies) updatePayload.technologies = technologies.split(',').map(t => t.trim());
+      if (technologies) {
+        const techArray = technologies.split(',').map(t => `"${t.trim()}"`);
+        updatePayload.technologies = `{${techArray.join(',')}}`;
+      }
       if (category) updatePayload.category = category;
       if (demoUrl) updatePayload.demo_url = demoUrl;
       if (sourceUrl) updatePayload.source_url = sourceUrl;
       if (status) updatePayload.status = status;
-      if (isFeatured !== undefined) updatePayload.is_featured = isFeatured;
-      if (order !== undefined) updatePayload.order = order;
+      if (isFeatured !== undefined) updatePayload.is_featured = isFeatured === 'true';
+      if (order !== undefined) updatePayload.order = parseInt(order, 10);
       if (isPublished !== undefined) updatePayload.is_published = isPublished;
 
       // Upload new image if provided
       if (req.file) {
         // Delete old image from Cloudflare R2
         if (existingProject.featured_image_url) {
-          await deleteFromR2(existingProject.featured_image_url);
+          const oldKey = existingProject.featured_image_url.replace(`${process.env.R2_PUBLIC_URL}/`, '');
+          await deleteFromR2(oldKey);
         }
 
         const result = await uploadToR2(
@@ -311,9 +313,7 @@ router.put(
           req.file.mimetype,
           'portfolio/projects'
         );
-        updatePayload.featured_image_url = result.public_id;
-
-        updatePayload.featured_image_alt = title; // Default alt text
+        updatePayload.featured_image_url = result.url;
       }
 
       const { data, error } = await supabase
@@ -380,7 +380,8 @@ router.delete('/:id', protect, authorize('admin'), async (req, res) => {
 
     // Delete image from Cloudflare R2
     if (existingProject.featured_image_url) {
-      await deleteFromR2(existingProject.featured_image_url);
+      const key = existingProject.featured_image_url.replace(`${process.env.R2_PUBLIC_URL}/`, '');
+      await deleteFromR2(key);
     }
 
     const { error } = await supabase.from('projects').delete().eq('id', req.params.id);

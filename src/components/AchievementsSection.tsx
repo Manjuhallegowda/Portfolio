@@ -1,6 +1,5 @@
-import achieveBackground from '@/assets/achive-background.jpg';
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { useLoading } from '@/hooks/useLoading';
 import {
@@ -15,7 +14,7 @@ import {
   Cloud,
   Palette,
   Settings,
-  LucideIcon,
+  type LucideIcon,
 } from 'lucide-react';
 
 interface Achievement {
@@ -31,7 +30,7 @@ interface Achievement {
 
 interface SectionContent {
   title?: string;
-  content?: string; // For the introductory paragraph
+  content?: string;
 }
 
 const iconMap: { [key: string]: LucideIcon } = {
@@ -46,7 +45,37 @@ const iconMap: { [key: string]: LucideIcon } = {
   cloud: Cloud,
   palette: Palette,
   settings: Settings,
-  // Add other icons as needed
+};
+
+const containerVariants: Variants = {
+  hidden: { opacity: 0, y: 24 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      when: 'beforeChildren',
+      staggerChildren: 0.15,
+      duration: 0.4,
+    },
+  },
+};
+
+const cardVariants: Variants = {
+  hidden: { opacity: 0, y: 32, scale: 0.96 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: 0.45,
+      ease: [0.16, 1, 0.3, 1],
+    },
+  },
+};
+
+const chipVariants: Variants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0 },
 };
 
 const AchievementsSection = () => {
@@ -58,171 +87,139 @@ const AchievementsSection = () => {
   const { showLoading, hideLoading } = useLoading();
 
   const { ref, inView } = useInView({
-    threshold: 0.1,
+    threshold: 0.15,
     triggerOnce: true,
   });
 
   useEffect(() => {
-    const fetchAchievementsAndSection = async () => {
+    const fetchData = async () => {
       showLoading();
       try {
-        // Fetch section content
         const sectionResponse = await fetch(
           'http://localhost:5000/api/sections/achievements-section'
         );
-        if (!sectionResponse.ok) {
-          throw new Error(`HTTP error! status: ${sectionResponse.status}`);
-        }
-        const sectionData = await sectionResponse.json();
-        setSectionContent(sectionData);
+        if (!sectionResponse.ok) throw new Error('Failed fetching section');
+        setSectionContent(await sectionResponse.json());
 
-        // Fetch achievements
-        const achievementsResponse = await fetch(
+        const dataResponse = await fetch(
           'http://localhost:5000/api/achievements'
         );
-        if (!achievementsResponse.ok) {
-          throw new Error(
-            `HTTP error! status: ${achievementsResponse.status}`
+        const achievementsData = await dataResponse.json();
+        if (achievementsData.success)
+          setAchievements(
+            achievementsData.data.sort(
+              (a: Achievement, b: Achievement) => a.order - b.order
+            )
           );
-        }
-        const achievementsData = await achievementsResponse.json();
-        if (achievementsData.success) {
-          setAchievements(achievementsData.data);
-        }
       } catch (err: any) {
         setError(err.message);
       } finally {
         hideLoading();
       }
     };
-
-    fetchAchievementsAndSection();
+    fetchData();
   }, []);
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-      },
-    },
-  };
-
-  const cardVariants = {
-    hidden: { opacity: 0, y: 50 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.6,
-      },
-    },
-  };
-
-  const listItemVariants = {
-    hidden: { opacity: 0, x: -20 },
-    visible: {
-      opacity: 1,
-      x: 0,
-    },
-  };
 
   if (error) {
     return (
-      <section className="py-20 relative bg-secondary flex items-center justify-center">
-        <p className="text-red-500">Error: {error}</p>
+      <section className="py-20 flex justify-center">
+        <p className="text-red-500">{error}</p>
       </section>
     );
   }
 
-  if (!sectionContent || !achievements) {
-    return null; // Or a placeholder
-  }
+  if (!sectionContent) return null;
+
+  const [first, ...rest] = sectionContent.title?.split(' ') || [
+    'Skills',
+    'Stack',
+  ];
 
   return (
-    <section
-      className="py-20 relative bg-cover bg-center bg-fixed"
-      style={{ backgroundImage: `url(${achieveBackground})` }}
-      ref={ref}
-        >
-          {/* Overlay to darken the background image and improve text readability */}
-          <div className="absolute inset-0 bg-black opacity-70"></div>
-    
-          <div className="container mx-auto px-6 relative z-10">
+    <section ref={ref} className="py-20 md:py-24 relative bg-muted/30">
+      {/* Soft subtle gradient top accent */}
+      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-accent/10 to-transparent" />
+
+      <div className="container mx-auto px-6 relative">
+        {/* Section Header */}
         <motion.div
-          className="text-center mb-20"
-          initial={{ opacity: 0, y: 30 }}
+          className="text-center max-w-3xl mx-auto mb-14"
+          initial={{ opacity: 0, y: 20 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.5 }}
         >
-          <h2 className="text-5xl font-bold mb-6">
-            {sectionContent?.title?.split(' ')[0] || 'Skills'}{' '}
+          <span className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.17em] px-4 py-1 border border-border rounded-full text-muted-foreground mb-3">
+            <span className="w-2 h-2 bg-accent rounded-full" />
+            Achievements
+          </span>
+
+          <h2 className="text-4xl font-bold mb-3">
+            {first}{' '}
             <span className="text-accent">
-              {sectionContent?.title?.split(' ').slice(1).join(' ') ||
-                '& Technologies'}
+              {rest.join(' ') || ' & Experience'}
             </span>
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            {sectionContent?.content ||
-              'Modern tech stack and proven methodologies for building scalable digital products.'}
+
+          <p className="text-muted-foreground text-lg">
+            {sectionContent.content ||
+              'A record of shipped products, proven skills, and modern tooling.'}
           </p>
         </motion.div>
 
+        {/* Cards */}
         <motion.div
-          className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
           variants={containerVariants}
           initial="hidden"
           animate={inView ? 'visible' : 'hidden'}
+          className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6"
         >
-          {achievements.map((achievement, cardIndex) => {
-            const IconComponent =
-              iconMap[achievement.icon as keyof typeof iconMap] || Award;
+          {achievements.map((item, index) => {
+            const Icon = iconMap[item.icon] || Award;
+
             return (
               <motion.div
-                key={achievement.id}
-                className="bg-background p-8 border border-border hover:border-accent transition-all duration-300 group hover-lift"
+                key={item.id}
                 variants={cardVariants}
-                whileHover={{ y: -5 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                whileHover={{ y: -6 }}
+                transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+                className="group p-6 rounded-2xl border border-border bg-card backdrop-blur-md shadow-sm hover:shadow-xl transition-shadow"
               >
-                <motion.div
-                  className="w-10 h-10 text-accent mb-6"
-                  whileHover={{ scale: 1.2, rotate: 10 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 10 }}
-                >
-                  <IconComponent className="w-full h-full" />
-                </motion.div>
+                <div className="flex items-center gap-4 mb-5">
+                  <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-accent/10 text-accent border border-accent/30">
+                    <Icon className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">{item.title}</h3>
+                    <p className="text-xs text-muted-foreground tracking-wide uppercase">
+                      {item.category}
+                    </p>
+                  </div>
+                </div>
 
-                <motion.h3
-                  className="text-xl font-bold mb-6 border-b border-border pb-4"
-                  initial={{ opacity: 0 }}
-                  animate={inView ? { opacity: 1 } : {}}
-                  transition={{ duration: 0.4, delay: 0.2 + cardIndex * 0.1 }}
-                >
-                  {achievement.title}
-                </motion.h3>
+                {item.description && (
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                    {item.description}
+                  </p>
+                )}
 
                 <motion.div
-                  className="flex flex-wrap gap-2"
                   variants={{
                     visible: {
                       transition: {
-                        staggerChildren: 0.1,
-                        delayChildren: 0.3 + cardIndex * 0.1,
+                        staggerChildren: 0.07,
+                        delayChildren: 0.2 + index * 0.05,
                       },
                     },
                   }}
-                  initial="hidden"
-                  animate={inView ? 'visible' : 'hidden'}
+                  className="flex flex-wrap gap-2"
                 >
-                  {achievement.items.map((item, index) => (
+                  {item.items.map((chip, i) => (
                     <motion.span
-                      key={index}
-                      className="bg-accent/10 text-accent text-xs font-medium px-2.5 py-1 rounded-full"
-                      variants={listItemVariants}
+                      key={i}
+                      variants={chipVariants}
+                      className="px-2.5 py-1 text-xs rounded-full bg-accent/10 text-accent border border-accent/20"
                     >
-                      {item}
+                      {chip}
                     </motion.span>
                   ))}
                 </motion.div>

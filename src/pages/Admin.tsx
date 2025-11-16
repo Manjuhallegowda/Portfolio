@@ -1,10 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  ReactNode,
-} from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Card,
@@ -29,8 +23,15 @@ import ProjectEditor from '@/components/ProjectEditor';
 import AchievementEditor from '@/components/AchievementEditor';
 import SectionEditor from '@/components/SectionEditor';
 import ContactEditor from '@/components/ContactEditor';
-
 import { Blog } from '@/interfaces/Blog';
+import {
+  FileText,
+  Layers3,
+  Award,
+  LayoutTemplate,
+  Inbox,
+  Users,
+} from 'lucide-react';
 
 interface Project {
   id: string;
@@ -49,6 +50,7 @@ interface Project {
   order: number;
   isPublished: boolean;
   createdAt: string;
+  updatedAt: string;
 }
 
 interface Contact {
@@ -60,8 +62,9 @@ interface Contact {
   is_read: boolean;
   is_replied: boolean;
   reply_message: string;
-  replied_at: string;
+  replied_at: string | null;
   createdAt: string;
+  updatedAt: string;
 }
 
 interface DashboardStats {
@@ -88,6 +91,7 @@ interface Achievement {
   order: number;
   isPublished: boolean;
   createdAt: string;
+  updatedAt: string;
 }
 
 interface Section {
@@ -118,12 +122,6 @@ const Admin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  useEffect(() => {
-    if (token && isLoggedIn) {
-      fetchDashboardData();
-    }
-  }, [token, isLoggedIn]);
-
   // Data states
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [blogs, setBlogs] = useState<Blog[]>([]);
@@ -145,9 +143,12 @@ const Admin = () => {
   const [editingSection, setEditingSection] = useState<Section | null>(null);
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
 
-
-
-
+  useEffect(() => {
+    if (token && isLoggedIn) {
+      fetchDashboardData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, isLoggedIn]);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -156,18 +157,15 @@ const Admin = () => {
     setSuccess('');
 
     try {
-      // Step 1: Sign in with Firebase
       await signInWithEmail(email, password);
-      const firebaseUser = auth.currentUser; // More reliable way to get user
+      const firebaseUser = auth.currentUser;
 
       if (!firebaseUser) {
         throw new Error('Login succeeded but user object is not available.');
       }
 
-      // Step 2: Get the Firebase ID token
       const firebaseIdToken = await firebaseUser.getIdToken();
 
-      // Step 3: Send the Firebase ID token to the backend's /login endpoint for user syncing
       const response = await fetch('http://localhost:5000/api/auth/login', {
         method: 'POST',
         headers: {
@@ -180,17 +178,15 @@ const Admin = () => {
 
       if (response.ok && data.success) {
         setSuccess('Login successful!');
-        // The useAuth hook will handle setting the token and isLoggedIn state
-        // We can now fetch dashboard data directly, as the token will be available via useAuth
-        // fetchDashboardData(token); // This will be handled by a new useEffect
       } else {
-        // If the backend fails, logout from Firebase to be safe
         await logout();
         setError(data.message || 'Backend user sync failed.');
       }
-    } catch (error: any) {
-      setError(error.message || 'Firebase login failed. Please check your credentials.');
-      console.error('Login process error:', error);
+    } catch (err: any) {
+      setError(
+        err.message || 'Firebase login failed. Please check your credentials.'
+      );
+      console.error('Login process error:', err);
     } finally {
       hideLoading();
     }
@@ -198,23 +194,23 @@ const Admin = () => {
 
   const handleLogout = async () => {
     try {
-      await logout(); // Sign out from Firebase
-      // The useAuth hook will handle clearing the token and isLoggedIn state
-      localStorage.removeItem('authToken'); // Ensure the Firebase ID token is cleared
-      // Clear all fetched data
+      await logout();
+      localStorage.removeItem('authToken');
       setStats(null);
       setBlogs([]);
       setProjects([]);
       setContacts([]);
-      setAchievements([]); // Clear achievements as well
+      setAchievements([]);
+      setSections([]);
     } catch (error) {
       console.error('Logout error:', error);
     }
   };
 
   const fetchDashboardData = async () => {
-    if (!token) return; // Use the token from useAuth hook
+    if (!token) return;
     showLoading();
+    setError('');
     try {
       const [
         statsRes,
@@ -224,24 +220,25 @@ const Admin = () => {
         achievementsRes,
         sectionsRes,
       ] = await Promise.all([
-                            fetch('http://localhost:5000/api/admin/dashboard', {
-                              headers: { Authorization: `Bearer ${token}` },
-                            }),
-                            fetch('http://localhost:5000/api/blogs/admin/all?limit=10', {
-                              headers: { Authorization: `Bearer ${token}` },
-                            }),
-                            fetch('http://localhost:5000/api/projects/admin/all?limit=10', {
-                              headers: { Authorization: `Bearer ${token}` },
-                            }),
-                            fetch('http://localhost:5000/api/contact?limit=10', {
-                              headers: { Authorization: `Bearer ${token}` },
-                            }),
-                            fetch('http://localhost:5000/api/achievements/admin/all', {
-                              headers: { Authorization: `Bearer ${token}` },
-                            }),
-                            fetch('http://localhost:5000/api/sections', {
-                              headers: { Authorization: `Bearer ${token}` },
-                            }),      ]);
+        fetch('http://localhost:5000/api/admin/dashboard', {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        fetch('http://localhost:5000/api/blogs/admin/all?limit=10', {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        fetch('http://localhost:5000/api/projects/admin/all?limit=10', {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        fetch('http://localhost:5000/api/contact?limit=10', {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        fetch('http://localhost:5000/api/achievements/admin/all', {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        fetch('http://localhost:5000/api/sections', {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ]);
 
       const [
         statsData,
@@ -260,59 +257,69 @@ const Admin = () => {
       ]);
 
       if (statsData.success) setStats(statsData.data.stats);
+
       if (blogsData.success) {
-        const transformedBlogs = blogsData.data.map((blog: any) => ({
-          ...blog,
-          createdAt: blog.created_at,
-          updatedAt: blog.updated_at,
-        }));
-        setBlogs(transformedBlogs);
+        setBlogs(blogsData.data);
       }
+
       if (projectsData.success) {
-        console.log('Fetched projects data:', projectsData.data); // Add this line
-        const transformedProjects = projectsData.data.map((project: any) => ({
-          ...project,
-          createdAt: project.created_at,
-          updatedAt: project.updated_at,
-        }));
+        const transformedProjects: Project[] = projectsData.data.map(
+          (project: any) => ({
+            ...project,
+            isPublished: project.is_published,
+            createdAt: project.created_at,
+            updatedAt: project.updated_at,
+          })
+        );
         setProjects(transformedProjects);
       }
+
       if (contactsData.success) {
-        const transformedContacts = contactsData.data.map((contact: any) => ({
-          ...contact,
-          createdAt: contact.created_at,
-          updatedAt: contact.updated_at,
-        }));
+        const transformedContacts: Contact[] = contactsData.data.map(
+          (contact: any) => ({
+            ...contact,
+            createdAt: contact.created_at,
+            updatedAt: contact.updated_at,
+          })
+        );
         setContacts(transformedContacts);
       }
+
       if (achievementsData.success) {
-        const transformedAchievements = achievementsData.data.map((achievement: any) => ({
-          ...achievement,
-          createdAt: achievement.created_at,
-          updatedAt: achievement.updated_at,
-        }));
+        const transformedAchievements: Achievement[] =
+          achievementsData.data.map((achievement: any) => ({
+            ...achievement,
+            isPublished: achievement.is_published,
+            createdAt: achievement.created_at,
+            updatedAt: achievement.updated_at,
+          }));
         setAchievements(transformedAchievements);
       }
+
       if (sectionsData.success) {
-        const transformedSections = sectionsData.data.map((section: any) => ({
-          ...section,
-          isPublished: section.is_published,
-          createdAt: section.created_at,
-          updatedAt: section.updated_at,
-        }));
+        const transformedSections: Section[] = sectionsData.data.map(
+          (section: any) => ({
+            ...section,
+            isPublished: section.is_published,
+            createdAt: section.created_at,
+            updatedAt: section.updated_at,
+          })
+        );
         setSections(transformedSections);
       }
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-      setError('Failed to fetch dashboard data. Your session might be expired.');
-      handleLogout(); // Log out if the token is invalid
+    } catch (err) {
+      console.error('Error fetching dashboard data:', err);
+      setError(
+        'Failed to fetch dashboard data. Your session might be expired.'
+      );
+      handleLogout();
     } finally {
       hideLoading();
     }
   };
 
   const handleSaveBlog = async (formData: FormData) => {
-    if (!token) return; // Use the token from useAuth hook
+    if (!token) return;
 
     const isEditing = !!editingBlog;
     const url = isEditing
@@ -337,16 +344,17 @@ const Admin = () => {
       } else {
         const errorData = await response.json();
         setError(
-          errorData.message || `Failed to ${isEditing ? 'update' : 'create'} blog`
+          errorData.message ||
+            `Failed to ${isEditing ? 'update' : 'create'} blog`
         );
       }
-    } catch (error) {
+    } catch {
       setError(`Failed to ${isEditing ? 'update' : 'create'} blog`);
     }
   };
 
   const handleSaveProject = async (formData: FormData) => {
-    if (!token) return; // Use the token from useAuth hook
+    if (!token) return;
 
     const isEditing = !!editingProject;
     const url = isEditing
@@ -377,13 +385,13 @@ const Admin = () => {
             `Failed to ${isEditing ? 'update' : 'create'} project`
         );
       }
-    } catch (error) {
+    } catch {
       setError(`Failed to ${isEditing ? 'update' : 'create'} project`);
     }
   };
 
   const handleSaveAchievement = async (achievement: Partial<Achievement>) => {
-    if (!token) return; // Use the token from useAuth hook
+    if (!token) return;
 
     const isEditing = !!editingAchievement;
     const url = isEditing
@@ -415,7 +423,7 @@ const Admin = () => {
             `Failed to ${isEditing ? 'update' : 'create'} achievement`
         );
       }
-    } catch (error) {
+    } catch {
       setError(`Failed to ${isEditing ? 'update' : 'create'} achievement`);
     }
   };
@@ -429,12 +437,11 @@ const Admin = () => {
       : 'http://localhost:5000/api/sections';
     const method = isEditing ? 'PUT' : 'POST';
 
+    const { id, createdAt, updatedAt, isPublished, ...rest } = section;
     const payload = {
-      ...section,
-      is_published: section.isPublished,
+      ...rest,
+      is_published: isPublished,
     };
-    // @ts-ignore
-    delete payload.isPublished; // remove the frontend-only property
 
     try {
       const response = await fetch(url, {
@@ -447,17 +454,20 @@ const Admin = () => {
       });
 
       if (response.ok) {
-        setSuccess(`Section ${isEditing ? 'updated' : 'created'} successfully!`);
+        setSuccess(
+          `Section ${isEditing ? 'updated' : 'created'} successfully!`
+        );
         fetchDashboardData();
         setIsSectionEditorOpen(false);
         setEditingSection(null);
       } else {
         const errorData = await response.json();
         setError(
-          errorData.message || `Failed to ${isEditing ? 'update' : 'create'} section`
+          errorData.message ||
+            `Failed to ${isEditing ? 'update' : 'create'} section`
         );
       }
-    } catch (error) {
+    } catch {
       setError(`Failed to ${isEditing ? 'update' : 'create'} section`);
     }
   };
@@ -487,13 +497,13 @@ const Admin = () => {
         const errorData = await response.json();
         setError(errorData.message || 'Failed to send reply');
       }
-    } catch (error) {
+    } catch {
       setError('Failed to send reply');
     }
   };
 
   const toggleBlogPublish = async (blogId: string, currentStatus: boolean) => {
-    if (!token) return; // Use the token from useAuth hook
+    if (!token) return;
 
     try {
       const response = await fetch(
@@ -504,21 +514,19 @@ const Admin = () => {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ isPublished: !currentStatus }),
+          body: JSON.stringify({ is_published: !currentStatus }),
         }
       );
 
       if (response.ok) {
-        setBlogs(
-          blogs.map((blog) =>
-            blog.id === blogId
-              ? { ...blog, isPublished: !currentStatus }
-              : blog
+        setBlogs((prev) =>
+          prev.map((blog) =>
+            blog.id === blogId ? { ...blog, is_published: !currentStatus } : blog
           )
         );
         setSuccess('Blog status updated successfully!');
       }
-    } catch (error) {
+    } catch {
       setError('Failed to update blog status');
     }
   };
@@ -527,7 +535,7 @@ const Admin = () => {
     projectId: string,
     currentStatus: boolean
   ) => {
-    if (!token) return; // Use the token from useAuth hook
+    if (!token) return;
 
     try {
       const response = await fetch(
@@ -538,13 +546,13 @@ const Admin = () => {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ isPublished: !currentStatus }),
+          body: JSON.stringify({ is_published: !currentStatus }),
         }
       );
 
       if (response.ok) {
-        setProjects(
-          projects.map((project) =>
+        setProjects((prev) =>
+          prev.map((project) =>
             project.id === projectId
               ? { ...project, isPublished: !currentStatus }
               : project
@@ -552,7 +560,7 @@ const Admin = () => {
         );
         setSuccess('Project status updated successfully!');
       }
-    } catch (error) {
+    } catch {
       setError('Failed to update project status');
     }
   };
@@ -561,7 +569,7 @@ const Admin = () => {
     achievementId: string,
     currentStatus: boolean
   ) => {
-    if (!token) return; // Use the token from useAuth hook
+    if (!token) return;
 
     try {
       const response = await fetch(
@@ -572,13 +580,13 @@ const Admin = () => {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ isPublished: !currentStatus }),
+          body: JSON.stringify({ is_published: !currentStatus }),
         }
       );
 
       if (response.ok) {
-        setAchievements(
-          achievements.map((achievement) =>
+        setAchievements((prev) =>
+          prev.map((achievement) =>
             achievement.id === achievementId
               ? { ...achievement, isPublished: !currentStatus }
               : achievement
@@ -586,7 +594,7 @@ const Admin = () => {
         );
         setSuccess('Achievement status updated successfully!');
       }
-    } catch (error) {
+    } catch {
       setError('Failed to update achievement status');
     }
   };
@@ -611,8 +619,8 @@ const Admin = () => {
       );
 
       if (response.ok) {
-        setSections(
-          sections.map((section) =>
+        setSections((prev) =>
+          prev.map((section) =>
             section.id === sectionId
               ? { ...section, isPublished: !currentStatus }
               : section
@@ -622,7 +630,7 @@ const Admin = () => {
       } else {
         setError('Failed to update section status');
       }
-    } catch (error) {
+    } catch {
       setError('Failed to update section status');
     }
   };
@@ -631,7 +639,7 @@ const Admin = () => {
     contactId: string,
     currentStatus: boolean
   ) => {
-    if (!token) return; // Use the token from useAuth hook
+    if (!token) return;
 
     try {
       const response = await fetch(
@@ -647,8 +655,8 @@ const Admin = () => {
       );
 
       if (response.ok) {
-        setContacts(
-          contacts.map((contact) =>
+        setContacts((prev) =>
+          prev.map((contact) =>
             contact.id === contactId
               ? { ...contact, is_read: !currentStatus }
               : contact
@@ -656,13 +664,13 @@ const Admin = () => {
         );
         setSuccess('Contact status updated successfully!');
       }
-    } catch (error) {
+    } catch {
       setError('Failed to update contact status');
     }
   };
 
   const handleDelete = async (resource: string, id: string) => {
-    if (!token) return; // Use the token from useAuth hook
+    if (!token) return;
 
     try {
       const response = await fetch(
@@ -679,7 +687,7 @@ const Admin = () => {
         setSuccess(`${resource} deleted successfully!`);
         fetchDashboardData();
       }
-    } catch (error) {
+    } catch {
       setError(`Failed to delete ${resource}`);
     }
   };
@@ -688,15 +696,12 @@ const Admin = () => {
     if (!token) return;
 
     try {
-      const response = await fetch(
-        `http://localhost:5000/api/sections/${id}`,
-        {
-          method: 'DELETE',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await fetch(`http://localhost:5000/api/sections/${id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (response.ok) {
         setSuccess('Section deleted successfully!');
@@ -705,47 +710,50 @@ const Admin = () => {
         const errorData = await response.json();
         setError(errorData.message || 'Failed to delete section');
       }
-    } catch (error) {
+    } catch {
       setError('Failed to delete section');
     }
   };
 
   if (!isLoggedIn) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navigation onHireMeClick={() => setIsHireMePopupOpen(true)} isAdminPage={true} />
+      <div className="min-h-screen bg-gradient-to-b from-background via-background to-background/95">
+        <Navigation
+          onHireMeClick={() => setIsHireMePopupOpen(true)}
+          isAdminPage={true}
+        />
 
         <motion.div
           className="pt-32 pb-16"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6 }}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
         >
           <div className="container mx-auto px-6 max-w-md">
             <motion.div
               className="text-center mb-8"
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
             >
-              <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-accent to-accent/70 bg-clip-text text-transparent">
+              <h1 className="text-4xl font-bold mb-3 bg-gradient-to-r from-accent via-amber-400 to-accent/70 bg-clip-text text-transparent">
                 Admin Login
               </h1>
               <p className="text-muted-foreground">
-                Access the admin panel to manage your portfolio content
+                Access the admin panel to manage your portfolio content.
               </p>
             </motion.div>
 
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 22 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
             >
-              <Card>
+              <Card className="border-border/70 bg-card/95 backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.7)]">
                 <CardHeader>
                   <CardTitle>Login</CardTitle>
                   <CardDescription>
-                    Enter your admin credentials to continue
+                    Enter your admin credentials to continue.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -764,7 +772,9 @@ const Admin = () => {
                       <Label htmlFor="email">Email</Label>
                       <Input
                         id="email"
+                        name="email"
                         type="email"
+                        autoComplete="email"
                         placeholder="admin@example.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
@@ -775,15 +785,21 @@ const Admin = () => {
                       <Label htmlFor="password">Password</Label>
                       <Input
                         id="password"
+                        name="password"
                         type="password"
+                        autoComplete="current-password"
                         placeholder="Enter your password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
                       />
                     </div>
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? 'Logging in...' : 'Login'}
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      disabled={isLoading || authLoading}
+                    >
+                      {isLoading || authLoading ? 'Logging in...' : 'Login'}
                     </Button>
                   </form>
                 </CardContent>
@@ -801,28 +817,32 @@ const Admin = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation onHireMeClick={() => setIsHireMePopupOpen(true)} isAdminPage={true} />
+    <div className="min-h-screen bg-gradient-to-b from-background via-background to-background/95">
+      <Navigation
+        onHireMeClick={() => setIsHireMePopupOpen(true)}
+        isAdminPage={true}
+      />
 
       <motion.div
         className="pt-32 pb-16"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.6 }}
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
       >
         <div className="container mx-auto px-6">
+          {/* Header */}
           <motion.div
-            className="flex justify-between items-center mb-8"
-            initial={{ opacity: 0, y: 30 }}
+            className="flex flex-col md:flex-row justify-between gap-4 md:items-center mb-8"
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
           >
             <div>
-              <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-accent to-accent/70 bg-clip-text text-transparent">
+              <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-accent via-amber-400 to-accent/70 bg-clip-text text-transparent">
                 Admin Dashboard
               </h1>
               <p className="text-muted-foreground">
-                Manage your portfolio content and monitor activity
+                Manage your portfolio content and monitor activity.
               </p>
             </div>
             <Button onClick={handleLogout} variant="outline">
@@ -830,6 +850,7 @@ const Admin = () => {
             </Button>
           </motion.div>
 
+          {/* Alerts */}
           {error && (
             <Alert variant="destructive" className="mb-6">
               <AlertDescription>{error}</AlertDescription>
@@ -841,28 +862,36 @@ const Admin = () => {
             </Alert>
           )}
 
+          {/* Stats */}
           {stats && (
             <motion.div
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8"
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
             >
-              <Card>
-                <CardHeader className="pb-2">
+              <Card className="border-border/70 bg-card/95 backdrop-blur-lg">
+                <CardHeader className="pb-2 flex flex-row items-center justify-between">
                   <CardTitle className="text-sm font-medium">
                     Total Users
                   </CardTitle>
+                  <div className="h-8 w-8 rounded-full bg-accent/10 flex items-center justify-center">
+                    <Users className="h-4 w-4 text-accent" />
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{stats.totalUsers}</div>
                 </CardContent>
               </Card>
-              <Card>
-                <CardHeader className="pb-2">
+
+              <Card className="border-border/70 bg-card/95 backdrop-blur-lg">
+                <CardHeader className="pb-2 flex flex-row items-center justify-between">
                   <CardTitle className="text-sm font-medium">
                     Published Blogs
                   </CardTitle>
+                  <div className="h-8 w-8 rounded-full bg-accent/10 flex items-center justify-center">
+                    <FileText className="h-4 w-4 text-accent" />
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
@@ -870,11 +899,15 @@ const Admin = () => {
                   </div>
                 </CardContent>
               </Card>
-              <Card>
-                <CardHeader className="pb-2">
+
+              <Card className="border-border/70 bg-card/95 backdrop-blur-lg">
+                <CardHeader className="pb-2 flex flex-row items-center justify-between">
                   <CardTitle className="text-sm font-medium">
                     Published Projects
                   </CardTitle>
+                  <div className="h-8 w-8 rounded-full bg-accent/10 flex items-center justify-center">
+                    <Layers3 className="h-4 w-4 text-accent" />
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
@@ -882,11 +915,15 @@ const Admin = () => {
                   </div>
                 </CardContent>
               </Card>
-              <Card>
-                <CardHeader className="pb-2">
+
+              <Card className="border-border/70 bg-card/95 backdrop-blur-lg">
+                <CardHeader className="pb-2 flex flex-row items-center justify-between">
                   <CardTitle className="text-sm font-medium">
                     Published Achievements
                   </CardTitle>
+                  <div className="h-8 w-8 rounded-full bg-accent/10 flex items-center justify-center">
+                    <Award className="h-4 w-4 text-accent" />
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
@@ -894,11 +931,15 @@ const Admin = () => {
                   </div>
                 </CardContent>
               </Card>
-              <Card>
-                <CardHeader className="pb-2">
+
+              <Card className="border-border/70 bg-card/95 backdrop-blur-lg">
+                <CardHeader className="pb-2 flex flex-row items-center justify-between">
                   <CardTitle className="text-sm font-medium">
                     Unread Messages
                   </CardTitle>
+                  <div className="h-8 w-8 rounded-full bg-accent/10 flex items-center justify-center">
+                    <Inbox className="h-4 w-4 text-accent" />
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
@@ -909,6 +950,7 @@ const Admin = () => {
             </motion.div>
           )}
 
+          {/* Tabs */}
           <Tabs defaultValue="blogs" className="w-full">
             <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="blogs">Blogs</TabsTrigger>
@@ -918,7 +960,8 @@ const Admin = () => {
               <TabsTrigger value="contacts">Contacts</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="blogs" className="space-y-4">
+            {/* Blogs */}
+            <TabsContent value="blogs" className="space-y-4 mt-4">
               <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-semibold">Blog Management</h2>
                 <Button
@@ -932,29 +975,29 @@ const Admin = () => {
               </div>
               <div className="grid gap-4">
                 {blogs.map((blog) => (
-                  <Card key={blog.id}>
+                  <Card key={blog.id} className="border-border/70 bg-card/95">
                     <CardHeader>
-                      <div className="flex justify-between items-start">
+                      <div className="flex justify-between items-start gap-4">
                         <div>
                           <CardTitle className="text-lg">
                             {blog.title}
                           </CardTitle>
                           <CardDescription>{blog.excerpt}</CardDescription>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2 justify-end">
                           <Badge
-                            variant={blog.isPublished ? 'default' : 'secondary'}
+                            variant={blog.is_published ? 'default' : 'secondary'}
                           >
-                            {blog.isPublished ? 'Published' : 'Draft'}
+                            {blog.is_published ? 'Published' : 'Draft'}
                           </Badge>
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() =>
-                              toggleBlogPublish(blog.id, blog.isPublished)
+                              toggleBlogPublish(blog.id, blog.is_published)
                             }
                           >
-                            {blog.isPublished ? 'Unpublish' : 'Publish'}
+                            {blog.is_published ? 'Unpublish' : 'Publish'}
                           </Button>
                           <Button
                             size="sm"
@@ -979,7 +1022,7 @@ const Admin = () => {
                       <div className="flex justify-between text-sm text-muted-foreground">
                         <span>Views: {blog.views}</span>
                         <span>
-                          {new Date(blog.createdAt).toLocaleDateString()}
+                          {new Date(blog.created_at).toLocaleDateString()}
                         </span>
                       </div>
                     </CardContent>
@@ -988,7 +1031,8 @@ const Admin = () => {
               </div>
             </TabsContent>
 
-            <TabsContent value="projects" className="space-y-4">
+            {/* Projects */}
+            <TabsContent value="projects" className="space-y-4 mt-4">
               <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-semibold">Project Management</h2>
                 <Button
@@ -1002,9 +1046,12 @@ const Admin = () => {
               </div>
               <div className="grid gap-4">
                 {projects.map((project) => (
-                  <Card key={project.id}>
+                  <Card
+                    key={project.id}
+                    className="border-border/70 bg-card/95"
+                  >
                     <CardHeader>
-                      <div className="flex justify-between items-start">
+                      <div className="flex justify-between items-start gap-4">
                         <div>
                           <CardTitle className="text-lg">
                             {project.title}
@@ -1013,7 +1060,7 @@ const Admin = () => {
                             {project.description}
                           </CardDescription>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2 justify-end">
                           <Badge
                             variant={
                               project.isPublished ? 'default' : 'secondary'
@@ -1045,9 +1092,7 @@ const Admin = () => {
                           <Button
                             size="sm"
                             variant="destructive"
-                            onClick={() =>
-                              handleDelete('projects', project.id)
-                            }
+                            onClick={() => handleDelete('projects', project.id)}
                           >
                             Delete
                           </Button>
@@ -1067,7 +1112,8 @@ const Admin = () => {
               </div>
             </TabsContent>
 
-            <TabsContent value="achievements" className="space-y-4">
+            {/* Achievements */}
+            <TabsContent value="achievements" className="space-y-4 mt-4">
               <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-semibold">
                   Achievement Management
@@ -1083,9 +1129,12 @@ const Admin = () => {
               </div>
               <div className="grid gap-4">
                 {achievements.map((achievement) => (
-                  <Card key={achievement.id}>
+                  <Card
+                    key={achievement.id}
+                    className="border-border/70 bg-card/95"
+                  >
                     <CardHeader>
-                      <div className="flex justify-between items-start">
+                      <div className="flex justify-between items-start gap-4">
                         <div>
                           <CardTitle className="text-lg">
                             {achievement.title}
@@ -1094,7 +1143,7 @@ const Admin = () => {
                             {achievement.description}
                           </CardDescription>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2 justify-end">
                           <Badge
                             variant={
                               achievement.isPublished ? 'default' : 'secondary'
@@ -1148,7 +1197,8 @@ const Admin = () => {
               </div>
             </TabsContent>
 
-            <TabsContent value="sections" className="space-y-4">
+            {/* Sections */}
+            <TabsContent value="sections" className="space-y-4 mt-4">
               <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-semibold">Section Management</h2>
                 <Button
@@ -1162,16 +1212,19 @@ const Admin = () => {
               </div>
               <div className="grid gap-4">
                 {sections.map((section) => (
-                  <Card key={section.id}>
+                  <Card
+                    key={section.id}
+                    className="border-border/70 bg-card/95"
+                  >
                     <CardHeader>
-                      <div className="flex justify-between items-start">
+                      <div className="flex justify-between items-start gap-4">
                         <div>
                           <CardTitle className="text-lg">
                             {section.name} ({section.page})
                           </CardTitle>
                           <CardDescription>{section.title}</CardDescription>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2 justify-end">
                           <Badge
                             variant={
                               section.isPublished ? 'default' : 'secondary'
@@ -1214,7 +1267,8 @@ const Admin = () => {
                       <div className="flex justify-between text-sm text-muted-foreground">
                         <span>Order: {section.order}</span>
                         <span>
-                          {new Date(section.createdAt!).toLocaleDateString()}
+                          {section.createdAt &&
+                            new Date(section.createdAt).toLocaleDateString()}
                         </span>
                       </div>
                     </CardContent>
@@ -1223,13 +1277,17 @@ const Admin = () => {
               </div>
             </TabsContent>
 
-            <TabsContent value="contacts" className="space-y-4">
+            {/* Contacts */}
+            <TabsContent value="contacts" className="space-y-4 mt-4">
               <h2 className="text-2xl font-semibold">Contact Messages</h2>
               <div className="grid gap-4">
                 {contacts.map((contact) => (
-                  <Card key={contact.id}>
+                  <Card
+                    key={contact.id}
+                    className="border-border/70 bg-card/95"
+                  >
                     <CardHeader>
-                      <div className="flex justify-between items-start">
+                      <div className="flex justify-between items-start gap-4">
                         <div>
                           <CardTitle className="text-lg">
                             {contact.subject}
@@ -1238,7 +1296,7 @@ const Admin = () => {
                             From: {contact.name} ({contact.email})
                           </CardDescription>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2 justify-end">
                           <Badge
                             variant={contact.is_read ? 'secondary' : 'default'}
                           >
