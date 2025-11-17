@@ -79,7 +79,7 @@ const VisionSection: React.FC<VisionSectionProps> = ({ sectionData }) => {
   const cursorY = useMotionValue(0);
   const spotlight = useMotionTemplate`radial-gradient(600px at ${cursorX}px ${cursorY}px, rgba(250, 204, 21, 0.18), transparent 70%)`;
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     cursorX.set(e.clientX - rect.left);
     cursorY.set(e.clientY - rect.top);
@@ -183,7 +183,11 @@ const VisionSection: React.FC<VisionSectionProps> = ({ sectionData }) => {
   };
 
   return (
-    <section className="py-20 relative flex items-center justify-center">
+    <section
+      ref={ref}
+      className="py-20 md:py-24 relative overflow-hidden bg-gradient-to-b from-background via-background/95 to-background"
+      onMouseMove={handleMouseMove}
+    >
       {/* Background layers */}
       <motion.div
         className="pointer-events-none absolute inset-0 opacity-70"
@@ -195,11 +199,8 @@ const VisionSection: React.FC<VisionSectionProps> = ({ sectionData }) => {
       <div className="pointer-events-none absolute inset-0 opacity-[0.08]">
         <div className="h-full w-full bg-[radial-gradient(circle_at_top,_#ffffff20,_transparent_55%),_linear-gradient(90deg,_rgba(255,255,255,0.08)_1px,_transparent_1px),_linear-gradient(180deg,_rgba(255,255,255,0.08)_1px,_transparent_1px)] bg-[length:100%_100%,120px_120px,120px_120px]" />
       </div>
-      <motion.div
-        ref={ref}
-        className="relative container mx-auto px-6"
-        onMouseMove={handleMouseMove}
-      >
+
+      <motion.div className="relative z-10 container mx-auto px-6">
         <motion.div
           className="grid lg:grid-cols-12 gap-10 lg:gap-14 items-center"
           variants={containerVariants}
