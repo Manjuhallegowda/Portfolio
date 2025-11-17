@@ -279,7 +279,7 @@ const VisionSection: React.FC<VisionSectionProps> = ({ sectionData }) => {
                         </div>
 
                         {/* Social Icons */}
-                        <div className="flex items-center gap-3 ml-auto pl-4">
+                        <div className="flex items-center gap-3 pl-4 sm:ml-auto">
                           <a
                             href="https://twitter.com"
                             target="_blank"
