@@ -120,6 +120,17 @@ const VisionSection: React.FC<VisionSectionProps> = ({ sectionData }) => {
     return () => cancelAnimationFrame(frameId);
   }, [inView, controls, sectionData]);
 
+  const formatStat = (n: number): string => {
+    const num = Math.floor(n);
+    if (num >= 1000000) {
+      return `${(num / 1000000).toFixed(1).replace(/\.0$/, '')}M`;
+    }
+    if (num >= 10000) {
+      return `${Math.floor(num / 1000)}k`;
+    }
+    return num.toLocaleString();
+  };
+
   if (!sectionData) return null;
 
   const quoteImageUrl =
@@ -433,7 +444,7 @@ const VisionSection: React.FC<VisionSectionProps> = ({ sectionData }) => {
                     animate={inView ? { scale: 1, opacity: 1 } : {}}
                     transition={{ duration: 0.4, delay: 0.35, type: 'spring' }}
                   >
-                    {counters.projects}+
+                    {formatStat(counters.projects)}+
                   </motion.span>
                 </div>
                 <p className="mt-2 text-[0.7rem] text-muted-foreground leading-snug">
@@ -458,7 +469,7 @@ const VisionSection: React.FC<VisionSectionProps> = ({ sectionData }) => {
                     animate={inView ? { scale: 1, opacity: 1 } : {}}
                     transition={{ duration: 0.4, delay: 0.45, type: 'spring' }}
                   >
-                    {counters.code.toLocaleString()}+
+                    {formatStat(counters.code)}+
                   </motion.span>
                 </div>
                 <p className="mt-2 text-[0.7rem] text-muted-foreground leading-snug">
@@ -483,7 +494,7 @@ const VisionSection: React.FC<VisionSectionProps> = ({ sectionData }) => {
                     animate={inView ? { scale: 1, opacity: 1 } : {}}
                     transition={{ duration: 0.4, delay: 0.55, type: 'spring' }}
                   >
-                    {counters.startups}+
+                    {formatStat(counters.startups)}+
                   </motion.span>
                 </div>
                 <p className="mt-2 text-[0.7rem] text-muted-foreground leading-snug">

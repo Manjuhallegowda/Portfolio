@@ -934,7 +934,7 @@ const Admin = () => {
 
           {/* Tabs */}
           <Tabs defaultValue="blogs" className="w-full">
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5">
               <TabsTrigger value="blogs">Blogs</TabsTrigger>
               <TabsTrigger value="projects">Projects</TabsTrigger>
               <TabsTrigger value="achievements">Achievements</TabsTrigger>
