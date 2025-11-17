@@ -183,7 +183,8 @@ const VisionSection: React.FC<VisionSectionProps> = ({ sectionData }) => {
   };
 
   return (
-    <section className="relative py-20 md:py-28 overflow-hidden">
+    <section className="relative py-20 md:py-28 overflow-x-visible overflow-y-hidden">
+      {' '}
       {/* Background layers */}
       <motion.div
         className="pointer-events-none absolute inset-0 opacity-70"
@@ -191,12 +192,10 @@ const VisionSection: React.FC<VisionSectionProps> = ({ sectionData }) => {
       />
       <div className="absolute inset-0 bg-gradient-to-b from-background via-background/70 to-background/30" />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-accent/10 to-transparent" />
-
       {/* Grid overlay */}
       <div className="pointer-events-none absolute inset-0 opacity-[0.08]">
         <div className="h-full w-full bg-[radial-gradient(circle_at_top,_#ffffff20,_transparent_55%),_linear-gradient(90deg,_rgba(255,255,255,0.08)_1px,_transparent_1px),_linear-gradient(180deg,_rgba(255,255,255,0.08)_1px,_transparent_1px)] bg-[length:100%_100%,120px_120px,120px_120px]" />
       </div>
-
       <motion.div
         ref={ref}
         className="relative container mx-auto px-6"
