@@ -184,7 +184,6 @@ const VisionSection: React.FC<VisionSectionProps> = ({ sectionData }) => {
 
   return (
     <section className="relative py-20 md:py-28 overflow-x-visible overflow-y-hidden">
-      {' '}
       {/* Background layers */}
       <motion.div
         className="pointer-events-none absolute inset-0 opacity-70"
