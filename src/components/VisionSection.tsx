@@ -254,9 +254,9 @@ const VisionSection: React.FC<VisionSectionProps> = ({ sectionData }) => {
 
                 <div className="relative rounded-[2rem] border border-border/70 bg-gradient-to-br from-background/90 via-background/70 to-background/60 backdrop-blur-xl p-6 sm:p-7 shadow-xl shadow-black/20">
                   {/* Avatar + text + Social icons */}
-                  <div className="flex items-start gap-4 mb-5">
+                  <div className="mb-5 flex flex-col items-center gap-6 text-center sm:flex-row sm:items-start sm:gap-4 sm:text-left">
                     {/* IMAGE */}
-                    <div className="relative h-50 w-40 rounded-2xl overflow-hidden bg-accent/10 flex items-center justify-center">
+                    <div className="relative flex h-50 w-40 items-center justify-center overflow-hidden rounded-2xl bg-accent/10">
                       <img
                         src={quoteImageUrl}
                         alt={sectionData?.images?.[0]?.alt || 'Vision'}
@@ -266,9 +266,9 @@ const VisionSection: React.FC<VisionSectionProps> = ({ sectionData }) => {
                     </div>
 
                     {/* TEXT AREA */}
-                    <div className="flex-1 flex flex-col pt-1">
+                    <div className="flex-1 flex-col pt-1">
                       {/* Product Title + Icons Row */}
-                      <div className="flex items-center justify-between mb-6">
+                      <div className="mb-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 sm:justify-between">
                         <div>
                           <div className="text-xs font-medium tracking-[0.18em] uppercase text-muted-foreground">
                             Product Philosophy
