@@ -185,7 +185,7 @@ const VisionSection: React.FC<VisionSectionProps> = ({ sectionData }) => {
   return (
     <section
       ref={ref}
-      className="relative py-20 md:py-24 bg-gradient-to-b from-background via-background/95 to-background overflow-x-hidden overflow-y-visible"
+      className="relative py-20 md:py-20 bg-gradient-to-b from-background via-background/95 to-background overflow-x-hidden overflow-y-visible"
       onMouseMove={handleMouseMove}
     >
       {/* Background layers wrapped so they never cause side-scroll */}
